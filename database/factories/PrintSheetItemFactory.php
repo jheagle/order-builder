@@ -34,7 +34,7 @@ class PrintSheetItemFactory extends Factory
             'order_item_id' => OrderItem::factory()->create([
                 'product_id' => $product
             ]),
-            'status' => $this->faker->randomElement(['pass', 'reject', 'complete']),
+            'status' => $this->faker->randomElement(PrintSheetItem::STATUSES),
             'image_url' => $this->faker->domainName(),
             'size' => "{$width}x{$height}",
             'x_pos' => mt_rand(0, 10 - $width),

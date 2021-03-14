@@ -12,6 +12,16 @@ class PrintSheetItem extends Model
 {
     use HasFactory;
 
+    public const STATUS_PASS = 'pass';
+    public const STATUS_REJECT = 'reject';
+    public const STATUS_COMPLETE = 'complete';
+
+    public const STATUSES = [
+        self::STATUS_PASS,
+        self::STATUS_REJECT,
+        self::STATUS_COMPLETE,
+    ];
+
     public function orderItem()
     {
         return $this->belongsTo(OrderItem::class);

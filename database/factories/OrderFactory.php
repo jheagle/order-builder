@@ -26,7 +26,7 @@ class OrderFactory extends Factory
             'customer_id' => $this->faker->randomNumber(),
             'total_price' => $this->faker->randomFloat(2, 1, 1000),
             'fulfillment_status' => $this->faker->text(25),
-            'order_status' => $this->faker->randomElement(['pending', 'active', 'done', 'cancelled', 'resend']),
+            'order_status' => $this->faker->randomElement(Order::STATUSES),
             'fulfilled_date' => now(),
             'customer_order_count' => $this->faker->randomNumber(),
         ];

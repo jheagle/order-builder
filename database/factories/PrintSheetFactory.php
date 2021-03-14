@@ -22,7 +22,7 @@ class PrintSheetFactory extends Factory
     public function definition()
     {
         return [
-            'type' => $this->faker->randomElement(['ecom', 'test']),
+            'type' => $this->faker->randomElement(PrintSheet::TYPES),
             'sheet_url' => $this->faker->domainName(),
         ];
     }

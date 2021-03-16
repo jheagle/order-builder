@@ -51,10 +51,10 @@ class PrintSheetServiceTest extends TestCase
     {
         $product = Product::find(3);
         $quantity = 1;
-        $orderItem = OrderItem::factory()->create([
+        $orderItem = OrderItem::factory([
             'product_id' => $product->id,
             'quantity' => $quantity,
-        ]);
+        ])->create();
         $order = $orderItem->order;
 
         $printSheet = $this->service->buildPrintSheet($order);

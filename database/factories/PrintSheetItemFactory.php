@@ -24,14 +24,14 @@ class PrintSheetItemFactory extends Factory
      */
     public function definition()
     {
-        $product = Product::factory()->create();
+        $product = Product::factory();
         $width = mt_rand(1, 5);
         $height = $width === 5 ? 2 : mt_rand(1, 5);
         $width = $height === 5 ? 2 : $width;
         return [
-            'print_sheet_id' => PrintSheet::factory()->create(),
+            'print_sheet_id' => PrintSheet::factory(),
             'product_id' => $product,
-            'order_item_id' => OrderItem::factory()->create([
+            'order_item_id' => OrderItem::factory([
                 'product_id' => $product
             ]),
             'status' => $this->faker->randomElement(PrintSheetItem::STATUSES),

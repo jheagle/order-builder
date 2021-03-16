@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Product;
 use App\Models\OrderItem;
 use App\Models\PrintSheet;
-use App\Models\Product;
+use App\Vectors\Traits\HasVectors;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PrintSheetItem extends Model
 {
     use HasFactory;
+    use HasVectors;
 
     public const STATUS_PASS = 'pass';
     public const STATUS_REJECT = 'reject';
@@ -20,6 +22,16 @@ class PrintSheetItem extends Model
         self::STATUS_PASS,
         self::STATUS_REJECT,
         self::STATUS_COMPLETE,
+    ];
+
+    protected array $coordinates = [
+        'x' => 'x_pos',
+        'y' => 'y_pos',
+    ];
+
+    protected array $dimensions = [
+        'width' => 'width',
+        'height' => 'height',
     ];
 
     public function orderItem()

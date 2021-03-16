@@ -27,11 +27,12 @@ class ProductFactory extends Factory
         for ($i = 0; $i < $skuLength; ++$i) {
             $sku .= $skuLetters[mt_rand(0, count($skuLetters) - 1)];
         }
+        $size = mt_rand(1, 5) . 'x' . mt_rand(1, 5);
         return [
             'title' => $this->faker->text(100),
             'vendor' => $this->faker->text(50),
             'type' => $this->faker->text(25),
-            'size' => $this->faker->text(20),
+            'size' => $size,
             'price' => $this->faker->randomFloat(2, 1, 1000),
             'handle' => $this->faker->text(75),
             'inventory_quantity' => mt_rand(1, 999),

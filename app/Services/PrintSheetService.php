@@ -2,12 +2,16 @@
 
 namespace App\Services;
 
+use Exception;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\PrintSheet;
 use Illuminate\Support\Str;
+use App\Vectors\VectorMatrix;
 use App\Models\PrintSheetItem;
+use App\Vectors\Traits\HasVectors;
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Manage Orders
@@ -16,8 +20,8 @@ use Illuminate\Support\Collection;
  */
 class PrintSheetService
 {
-    private const SHEET_WIDTH = 10;
-    private const SHEET_HEIGHT = 15;
+    public const SHEET_WIDTH = 10;
+    public const SHEET_HEIGHT = 15;
 
     /**
      * Take an Order an convert it to a Print Sheet
@@ -38,8 +42,10 @@ class PrintSheetService
             new Collection()
         );
 
+        $matrix = new VectorMatrix(self::SHEET_WIDTH, self::SHEET_HEIGHT);
         $this->sortPrintSheetItems($printSheetItems)
-            ->each(function (PrintSheetItem $sheetItem) {
+            ->each(function (PrintSheetItem $sheetItem) use ($matrix) {
+                $this->assignAvailablePosition($sheetItem, $matrix);
                 $sheetItem->save();
             });
 
@@ -85,6 +91,48 @@ class PrintSheetService
      */
     public function sortPrintSheetItems(Collection $sheetItems): Collection
     {
-        return $sheetItems;
+        return $sheetItems->sort(function ($a, $b) {
+            $perimeterA = $a->width + $a->height;
+            $perimeterB = $b->width + $b->height;
+            if ($perimeterA === $perimeterB) {
+                if ($a->width === $b->width) {
+                    return 0;
+                }
+                return $a->width < $b->width ? -1 : 1;
+            }
+            return $perimeterA < $perimeterB ? -1 : 1;
+        });
+    }
+
+    /**
+     * Take all of the Print Sheet Items and apply x and y positions
+     *
+     * @param Collection $sheetItems
+     *
+     * @return Collection
+     */
+    public function assignAvailablePosition(Model $sheetItem, VectorMatrix $matrix): Model
+    {
+        if (!in_array(HasVectors::class, class_uses($sheetItem))) {
+            throw new Exception('There are no vectors on ' . get_class($sheetItem));
+        }
+        $foundSpace = false;
+        $sheetVectors = $sheetItem->getVectors();
+        if ($sheetVectors->count() > $matrix->getAvailableVectors()->count()) {
+            throw new Exception('There is no available space for ' . get_class($sheetItem));
+        }
+        foreach ($matrix->getAvailableVectors() as $availVector) {
+            $sheetItem->setAnchorPoint($availVector);
+            if ($matrix->canUseVectors($sheetItem->getVectors())) {
+                $matrix->assignVectors($sheetVectors);
+                $foundSpace = true;
+                break;
+            }
+            $sheetVectors = $sheetItem->getVectors();
+        }
+        if (!$foundSpace) {
+            throw new Exception('There is no available space for ' . get_class($sheetItem));
+        }
+        return $sheetItem;
     }
 }

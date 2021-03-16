@@ -47,11 +47,10 @@ class PrintSheetServiceTest extends TestCase
     public function testCreateASinglePrintSheetItem()
     {
         $product = Product::factory()->unit()->make();
-        $orderItem = OrderItem::factory()->unit()
-            ->make([
-                'product_id' => $product->id,
-                'quantity' => 1,
-            ]);
+        $orderItem = OrderItem::factory([
+            'product_id' => $product->id,
+            'quantity' => 1,
+        ])->unit()->make();
         $orderItem->product = $product;
         $printSheet = PrintSheet::factory()->unit()->make();
         $width = Str::before($product->size, 'x');
@@ -76,18 +75,17 @@ class PrintSheetServiceTest extends TestCase
     {
         $product = Product::factory()->unit()->make();
         $quantity = 5;
-        $orderItem = OrderItem::factory()->unit()
-            ->make([
-                'product_id' => $product->id,
-                'quantity' => $quantity,
-            ]);
+        $orderItem = OrderItem::factory([
+            'product_id' => $product->id,
+            'quantity' => $quantity,
+        ])->unit()->make();
         $orderItem->product = $product;
         $printSheet = PrintSheet::factory()->unit()->make();
         $printSheetItems = $this->service->buildPrintSheetItems($printSheet, $orderItem);
 
         $this->assertCount($quantity, $printSheetItems);
 
-        $printSheetItems->each(function (PrintSheetItem $printSheetItem) use($product){
+        $printSheetItems->each(function (PrintSheetItem $printSheetItem) use ($product) {
             $width = Str::before($product->size, 'x');
             $height = Str::after($product->size, 'x');
             $this->assertEquals(PrintSheetItem::STATUS_PASS, $printSheetItem->status);

@@ -42,7 +42,7 @@ class PrintSheetService
             new Collection()
         );
 
-        $matrix = new VectorMatrix(self::SHEET_WIDTH, self::SHEET_HEIGHT);
+        $matrix = (new VectorMatrix(self::SHEET_WIDTH, self::SHEET_HEIGHT))->create();
         $this->sortPrintSheetItems($printSheetItems)
             ->each(function (PrintSheetItem $sheetItem) use ($matrix) {
                 $this->assignAvailablePosition($sheetItem, $matrix);

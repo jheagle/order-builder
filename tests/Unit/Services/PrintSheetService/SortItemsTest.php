@@ -47,7 +47,7 @@ class SortItemsTest extends TestCase
         $sheetItemCollection = $this->makeSheetItems($sheetItems);
         $expectedVectors = $this->makeVectorCollection($expected);
 
-        $matrix = new VectorMatrix($this->service::SHEET_WIDTH, $this->service::SHEET_HEIGHT);
+        $matrix = (new VectorMatrix($this->service::SHEET_WIDTH, $this->service::SHEET_HEIGHT))->create();
         $sheetItemCollection = $this->service->sortPrintSheetItems($sheetItemCollection)->map(
             fn ($sheetItem) => $this->service->assignAvailablePosition($sheetItem, $matrix)
         );

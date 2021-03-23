@@ -11,3 +11,4 @@ docker-compose.override.yml
 npm-debug.log
 yarn-error.log
 .editorconfig
+.idea

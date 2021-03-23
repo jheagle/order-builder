@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Services\PrintSheetService;
+namespace Tests\Feature\Services\PrintSheetService;
 
 use Tests\TestCase;
 use App\Vectors\Vector;
@@ -12,7 +12,7 @@ use App\Services\PrintSheetService;
 /**
  * Test placing of a variety of sized print sheet items onto a sheet
  *
- * @package Tests\Unit\Services\PrintSheetService
+ * @package Tests\Feature\Services\PrintSheetService
  *
  * @group Unit
  * @group Services
@@ -21,7 +21,7 @@ use App\Services\PrintSheetService;
  *
  * @coversDefaultClass PrintSheetService
  */
-class SortItemsTest extends TestCase
+class SetPrintItemPositionsTest extends TestCase
 {
     public PrintSheetService $service;
 
@@ -50,11 +50,18 @@ class SortItemsTest extends TestCase
         $sheetItemCollection = $this->makeSheetItems($sheetItems);
         $expectedVectors = $this->makeVectorCollection($expected);
 
-        $sheetItemCollection = $this->service->sortPrintSheetItems($sheetItemCollection);
+        $matrix = (new VectorMatrix($this->service::SHEET_WIDTH, $this->service::SHEET_HEIGHT))->create();
+        $sheetItemCollection = $this->service->sortPrintSheetItems($sheetItemCollection)->map(
+            fn ($sheetItem) => $this->service->assignAvailablePosition($sheetItem, $matrix)
+        );
 
-        foreach ($sheetItemCollection as $i => $sheetItem) {
-            $this->assertTrue($expectedVectors[$i]->equals($sheetItem->getDimensions()));
-        }
+        $this->assertCount($expectedVectors->count(), $sheetItems);
+        $this->assertTrue($sheetItemCollection->every(
+            function ($sheetItem) use ($expectedVectors): bool {
+                $sheetVector = $sheetItem->getAnchorPoint();
+                return $expectedVectors->contains(fn (Vector $vector) => $vector->equals($sheetVector));
+            }
+        ));
     }
 
     /**
@@ -68,37 +75,12 @@ class SortItemsTest extends TestCase
             'single 5x2 should be top left' => [
                 'sheetItems' => [
                     [
-                        'width' => 1,
-                        'height' => 1
-                    ],
-                    [
-                        'width' => 2,
-                        'height' => 2
-                    ],
-                    [
-                        'width' => 2,
-                        'height' => 5
-                    ],
-                    [
-                        'width' => 3,
-                        'height' => 3
-                    ],
-                    [
                         'width' => 5,
                         'height' => 2
-                    ],
-                    [
-                        'width' => 4,
-                        'height' => 4
-                    ],
+                    ]
                 ],
                 'expected' => [
-                    [5, 2, 1],
-                    [2, 5, 1],
-                    [4, 4, 1],
-                    [3, 3, 1],
-                    [2, 2, 1],
-                    [1, 1, 1]
+                    [0, 0]
                 ]
             ],
         ];

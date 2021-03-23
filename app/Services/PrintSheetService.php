@@ -29,6 +29,8 @@ class PrintSheetService
      * @param Order $order
      *
      * @return PrintSheet
+     *
+     * @throws Exception
      */
     public function buildPrintSheet(Order $order): PrintSheet
     {
@@ -38,7 +40,7 @@ class PrintSheetService
         $printSheet->save();
 
         $printSheetItems = $order->orderItems->reduce(
-            fn (Collection $sheetItems, OrderItem $item) => $sheetItems->concat($this->buildPrintSheetItems($printSheet, $item)),
+            fn(Collection $sheetItems, OrderItem $item) => $sheetItems->concat($this->buildPrintSheetItems($printSheet, $item)),
             new Collection()
         );
 
@@ -83,7 +85,8 @@ class PrintSheetService
     }
 
     /**
-     * Take all of the Print Sheet Items and apply x and y positions
+     * Take all of the Print Sheet Items and sort them from largest perimeter to smallest.
+     * Equal perimeter place largest width first.
      *
      * @param Collection $sheetItems
      *
@@ -91,29 +94,27 @@ class PrintSheetService
      */
     public function sortPrintSheetItems(Collection $sheetItems): Collection
     {
-        return $sheetItems->sort(function ($a, $b) {
-            $perimeterA = $a->width + $a->height;
-            $perimeterB = $b->width + $b->height;
-            if ($perimeterA === $perimeterB) {
-                if ($a->width === $b->width) {
-                    return 0;
-                }
-                return $a->width < $b->width ? -1 : 1;
-            }
-            return $perimeterA < $perimeterB ? -1 : 1;
-        });
+        return $sheetItems->sort(function (PrintSheetItem $a, PrintSheetItem $b) {
+            $highestWidth = $a->width > $b->width ? $a : $b;
+            $highestHeight = $a->height > $b->height ? $a : $b;
+            $largestSide = $highestHeight->height > $highestWidth->width ? $highestHeight : $highestWidth;
+            return $largestSide === $a ? -1 : 1;
+        })->values();
     }
 
     /**
-     * Take all of the Print Sheet Items and apply x and y positions
+     * Assign next available space to the Print Sheet Item
      *
-     * @param Collection $sheetItems
+     * @param Model $sheetItem
+     * @param VectorMatrix $matrix
      *
-     * @return Collection
+     * @return Model
+     *
+     * @throws Exception
      */
     public function assignAvailablePosition(Model $sheetItem, VectorMatrix $matrix): Model
     {
-        if (!in_array(HasVectors::class, class_uses($sheetItem))) {
+        if (!in_array(HasVectors::class, class_uses($sheetItem), true)) {
             throw new Exception('There are no vectors on ' . get_class($sheetItem));
         }
         $foundSpace = false;

@@ -4,19 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\OrderItem;
-use App\Models\PrintSheetItem;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @method static find(int $productId)
+ */
 class Product extends Model
 {
     use HasFactory;
 
-    public function orderItems()
+    final public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
 
-    public function printSheetItems()
+    final public function printSheetItems(): HasMany
     {
         return $this->hasMany(PrintSheetItem::class);
     }

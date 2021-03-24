@@ -4,8 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\PrintSheetItem;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property mixed|string type
+ * @property mixed|string sheet_url
+ * @property mixed id
+ */
 class PrintSheet extends Model
 {
     use HasFactory;
@@ -18,7 +23,7 @@ class PrintSheet extends Model
         self::TYPE_TEST,
     ];
 
-    public function printSheetItems()
+    final public function printSheetItems(): HasMany
     {
         return $this->hasMany(PrintSheetItem::class);
     }

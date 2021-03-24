@@ -32,7 +32,7 @@ class PrintSheetService
      *
      * @throws Exception
      */
-    public function buildPrintSheet(Order $order): PrintSheet
+    final public function buildPrintSheet(Order $order): PrintSheet
     {
         $printSheet = new PrintSheet();
         $printSheet->type = PrintSheet::TYPE_ECOM;
@@ -62,7 +62,7 @@ class PrintSheetService
      *
      * @return Collection
      */
-    public function buildPrintSheetItems(PrintSheet $printSheet, OrderItem $item): Collection
+    final public function buildPrintSheetItems(PrintSheet $printSheet, OrderItem $item): Collection
     {
         $sheetItems = new Collection();
         for ($i = 0; $i < $item->quantity; ++$i) {
@@ -92,7 +92,7 @@ class PrintSheetService
      *
      * @return Collection
      */
-    public function sortPrintSheetItems(Collection $sheetItems): Collection
+    final public function sortPrintSheetItems(Collection $sheetItems): Collection
     {
         return $sheetItems->sort(function (PrintSheetItem $a, PrintSheetItem $b) {
             $highestWidth = $a->width > $b->width ? $a : $b;
@@ -105,14 +105,14 @@ class PrintSheetService
     /**
      * Assign next available space to the Print Sheet Item
      *
-     * @param Model $sheetItem
+     * @param PrintSheetItem $sheetItem
      * @param VectorMatrix $matrix
      *
      * @return Model
      *
      * @throws Exception
      */
-    public function assignAvailablePosition(Model $sheetItem, VectorMatrix $matrix): Model
+    final public function assignAvailablePosition(PrintSheetItem $sheetItem, VectorMatrix $matrix): Model
     {
         if (!in_array(HasVectors::class, class_uses($sheetItem), true)) {
             throw new Exception('There are no vectors on ' . get_class($sheetItem));

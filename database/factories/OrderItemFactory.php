@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\OrderItem;
+use Exception;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class OrderItemFactory extends Factory
@@ -20,13 +21,15 @@ class OrderItemFactory extends Factory
      * Define the model's default state.
      *
      * @return array
+     *
+     * @throws Exception
      */
-    public function definition()
+    final public function definition(): array
     {
         return [
             'order_id' => Order::factory(),
             'product_id' => Product::factory(),
-            'quantity' => mt_rand(1, 150),
+            'quantity' => random_int(1, 150),
             'refunded' => $this->faker->randomNumber(),
             'resend_amount' => $this->faker->randomNumber(),
         ];
@@ -37,13 +40,13 @@ class OrderItemFactory extends Factory
      *
      * @return Factory
      */
-    public function unit()
+    final public function unit(): Factory
     {
         return $this->state(
-            fn () => [
-                'id' => mt_rand(1, 999),
-                'order_id' => mt_rand(1, 999),
-                'product_id' => mt_rand(1, 999),
+            fn() => [
+                'id' => random_int(1, 999),
+                'order_id' => random_int(1, 999),
+                'product_id' => random_int(1, 999),
             ]
         );
     }

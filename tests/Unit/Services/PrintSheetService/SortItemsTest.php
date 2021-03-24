@@ -4,7 +4,6 @@ namespace Tests\Unit\Services\PrintSheetService;
 
 use Tests\TestCase;
 use App\Vectors\Vector;
-use App\Vectors\VectorMatrix;
 use App\Models\PrintSheetItem;
 use Illuminate\Support\Collection;
 use App\Services\PrintSheetService;
@@ -30,7 +29,7 @@ class SortItemsTest extends TestCase
      *
      * @return void
      */
-    protected function setUp(): void
+    final public function setUp(): void
     {
         parent::setUp();
 
@@ -45,7 +44,7 @@ class SortItemsTest extends TestCase
      * @param array $sheetItems
      * @param array $expected
      */
-    public function testPositionSet(array $sheetItems, array $expected): void
+    final public function testPositionSet(array $sheetItems, array $expected): void
     {
         $sheetItemCollection = $this->makeSheetItems($sheetItems);
         $expectedVectors = $this->makeVectorCollection($expected);
@@ -53,7 +52,7 @@ class SortItemsTest extends TestCase
         $sheetItemCollection = $this->service->sortPrintSheetItems($sheetItemCollection);
 
         foreach ($sheetItemCollection as $i => $sheetItem) {
-            $this->assertTrue($expectedVectors[$i]->equals($sheetItem->getDimensions()));
+            self::assertTrue($expectedVectors[$i]->equals($sheetItem->getDimensions()));
         }
     }
 
@@ -62,7 +61,7 @@ class SortItemsTest extends TestCase
      *
      * @return int[]
      */
-    public function sheetItemProvider(): array
+    final public function sheetItemProvider(): array
     {
         return [
             'single 5x2 should be top left' => [
@@ -114,7 +113,7 @@ class SortItemsTest extends TestCase
     private function makeSheetItems(array $itemDimensions): Collection
     {
         return new Collection(
-            array_map(function (array $dimensions): PrintSheetItem {
+            array_map(static function (array $dimensions): PrintSheetItem {
                 return PrintSheetItem::factory([
                     'x_pos' => 0,
                     'y_pos' => 0,
@@ -135,7 +134,7 @@ class SortItemsTest extends TestCase
     private function makeVectorCollection(array $vectorCoordinates): Collection
     {
         return new Collection(
-            array_map(function (array $coordinates): Vector {
+            array_map(static function (array $coordinates): Vector {
                 return new Vector(...$coordinates);
             }, $vectorCoordinates)
         );

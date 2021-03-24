@@ -2,27 +2,33 @@
 
 namespace App\Models;
 
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\PrintSheetItem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property mixed order_id
+ * @property int|mixed product_id
+ * @property int|mixed quantity
+ * @property mixed product
+ * @property mixed id
+ */
 class OrderItem extends Model
 {
     use HasFactory;
 
-    public function order()
+    final public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
-    public function product()
+    final public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function printSheetItems()
+    final public function printSheetItems(): HasMany
     {
         return $this->hasMany(PrintSheetItem::class);
     }

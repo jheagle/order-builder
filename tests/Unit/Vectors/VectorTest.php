@@ -25,14 +25,14 @@ class VectorTest extends TestCase
      *
      * @covers ::add
      */
-    public function testAddVectorCreatesNewVector()
+    final public function testAddVectorCreatesNewVector(): void
     {
         $start = new Vector(0, 3, 2);
         $other = new Vector(5, 1, 4);
         $newVector = $start->add($other);
-        $this->assertEquals(5, $newVector->x);
-        $this->assertEquals(4, $newVector->y);
-        $this->assertEquals(6, $newVector->z);
+        self::assertEquals(5, $newVector->x);
+        self::assertEquals(4, $newVector->y);
+        self::assertEquals(6, $newVector->z);
     }
 
     /**
@@ -42,14 +42,14 @@ class VectorTest extends TestCase
      *
      * @covers ::diff
      */
-    public function testDiffVectorCreatesNewVector()
+    final public function testDiffVectorCreatesNewVector(): void
     {
         $start = new Vector(0, 3, 2);
         $other = new Vector(5, 1, 4);
         $newVector = $start->diff($other);
-        $this->assertEquals(5, $newVector->x);
-        $this->assertEquals(-2, $newVector->y);
-        $this->assertEquals(2, $newVector->z);
+        self::assertEquals(5, $newVector->x);
+        self::assertEquals(-2, $newVector->y);
+        self::assertEquals(2, $newVector->z);
     }
 
     /**
@@ -59,11 +59,11 @@ class VectorTest extends TestCase
      *
      * @covers ::equals
      */
-    public function testEqualsComparesTwoVectors()
+    final public function testEqualsComparesTwoVectors(): void
     {
         $start = new Vector(0, 3, 2);
-        $this->assertFalse($start->equals(new Vector(5, 1, 4)));
-        $this->assertTrue($start->equals(new Vector(0, 3, 2)));
+        self::assertFalse($start->equals(new Vector(5, 1, 4)));
+        self::assertTrue($start->equals(new Vector(0, 3, 2)));
     }
 
     /**
@@ -73,14 +73,14 @@ class VectorTest extends TestCase
      *
      * @covers ::getDirection
      */
-    public function testGetDirectionReturnsDirectionVector()
+    final public function testGetDirectionReturnsDirectionVector(): void
     {
         $start = new Vector(0, 3, 2);
         $other = new Vector(5, 3, 4);
         $newVector = $start->getDirection($other);
-        $this->assertEquals(1, $newVector->x);
-        $this->assertEquals(0, $newVector->y);
-        $this->assertEquals(1, $newVector->z);
+        self::assertEquals(1, $newVector->x);
+        self::assertEquals(0, $newVector->y);
+        self::assertEquals(1, $newVector->z);
     }
 
     /**
@@ -90,13 +90,13 @@ class VectorTest extends TestCase
      *
      * @covers ::getEndPoint
      */
-    public function testGetEndpointReturnsEndPointVector()
+    final public function testGetEndpointReturnsEndPointVector(): void
     {
         $start = new Vector(0, 3, 2);
         $dimensions = new Vector(5, 1, 4);
         $newVector = $start->getEndPoint($dimensions);
-        $this->assertEquals(4, $newVector->x);
-        $this->assertEquals(3, $newVector->y);
-        $this->assertEquals(5, $newVector->z);
+        self::assertEquals(4, $newVector->x);
+        self::assertEquals(3, $newVector->y);
+        self::assertEquals(5, $newVector->z);
     }
 }

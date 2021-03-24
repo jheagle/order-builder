@@ -27,10 +27,10 @@ class HasVectorsTest extends TestCase
      *
      * @covers ::getAnchorPoint
      */
-    public function testGetAnchorPointWithNoCoordinatesReturnsDefaultVector()
+    final public function testGetAnchorPointWithNoCoordinatesReturnsDefaultVector(): void
     {
         $vectorsClass = $this->makeHasVectorsClass(['coordinates' => null]);
-        $this->assertTrue(
+        self::assertTrue(
             $vectorsClass->getAnchorPoint()->equals(new Vector(0, 0, 0))
         );
     }
@@ -42,10 +42,10 @@ class HasVectorsTest extends TestCase
      *
      * @covers ::getAnchorPoint
      */
-    public function testGetAnchorPointWithSingleCoordinateDefaultsZeros()
+    final public function testGetAnchorPointWithSingleCoordinateDefaultsZeros(): void
     {
         $vectorsClass = $this->makeHasVectorsClass(['x' => 1, 'y' => 2, 'z' => 3]);
-        $this->assertTrue(
+        self::assertTrue(
             $vectorsClass->getAnchorPoint()->equals(new Vector(1, 2, 3))
         );
     }
@@ -57,7 +57,7 @@ class HasVectorsTest extends TestCase
      *
      * @covers ::getAnchorPoint
      */
-    public function testGetAnchorPointReturnsVectorBasedOnCustomFields()
+    final public function testGetAnchorPointReturnsVectorBasedOnCustomFields(): void
     {
         $vectorsClass = $this->makeHasVectorsClass([
             'coordinates' => [
@@ -69,7 +69,7 @@ class HasVectorsTest extends TestCase
             'y_pos' => 2,
             'z_pos' => 3
         ]);
-        $this->assertTrue(
+        self::assertTrue(
             $vectorsClass->getAnchorPoint()->equals(new Vector(1, 2, 3))
         );
     }
@@ -81,10 +81,10 @@ class HasVectorsTest extends TestCase
      *
      * @covers ::getDimensions
      */
-    public function testGetDimensionsWithNoCoordinatesReturnsDefaultVector()
+    final public function testGetDimensionsWithNoCoordinatesReturnsDefaultVector(): void
     {
         $vectorsClass = $this->makeHasVectorsClass(['dimensions' => null]);
-        $this->assertTrue(
+        self::assertTrue(
             $vectorsClass->getDimensions()->equals(new Vector(1, 1, 1))
         );
     }
@@ -96,10 +96,10 @@ class HasVectorsTest extends TestCase
      *
      * @covers ::getDimensions
      */
-    public function testGetDimensionsWithSingleCoordinateDefaultsZeros()
+    final public function testGetDimensionsWithSingleCoordinateDefaultsZeros(): void
     {
         $vectorsClass = $this->makeHasVectorsClass(['width' => 1, 'height' => 2, 'depth' => 3]);
-        $this->assertTrue(
+        self::assertTrue(
             $vectorsClass->getDimensions()->equals(new Vector(1, 2, 3))
         );
     }
@@ -111,7 +111,7 @@ class HasVectorsTest extends TestCase
      *
      * @covers ::getDimensions
      */
-    public function testGetDimensionsReturnsVectorBasedOnCustomFields()
+    final public function testGetDimensionsReturnsVectorBasedOnCustomFields(): void
     {
         $vectorsClass = $this->makeHasVectorsClass([
             'dimensions' => [
@@ -123,7 +123,7 @@ class HasVectorsTest extends TestCase
             'size_h' => 2,
             'size_d' => 3
         ]);
-        $this->assertTrue(
+        self::assertTrue(
             $vectorsClass->getDimensions()->equals(new Vector(1, 2, 3))
         );
     }
@@ -135,12 +135,12 @@ class HasVectorsTest extends TestCase
      *
      * @covers ::setAnchorPoint
      */
-    public function testSetAnchorPointsWithNoCoordinatesWillOnlySetAnchorPointField()
+    final public function testSetAnchorPointsWithNoCoordinatesWillOnlySetAnchorPointField(): void
     {
         $vectorsClass = $this->makeHasVectorsClass(['coordinates' => null]);
         $anchor = new Vector(3, 2, 1);
         $vectorsClass->setAnchorPoint($anchor);
-        $this->assertTrue(
+        self::assertTrue(
             $vectorsClass->getAnchorPoint()->equals($anchor)
         );
     }
@@ -152,7 +152,7 @@ class HasVectorsTest extends TestCase
      *
      * @covers ::setAnchorPoint
      */
-    public function testSetAnchorPointsWithConfiguredCoordinatesSetsFields()
+    final public function testSetAnchorPointsWithConfiguredCoordinatesSetsFields(): void
     {
         $vectorsClass = $this->makeHasVectorsClass([
             'coordinates' => ['x' => 'x'],
@@ -161,10 +161,10 @@ class HasVectorsTest extends TestCase
         $xValue = 3;
         $anchor = new Vector($xValue, 2, 1);
         $vectorsClass->setAnchorPoint($anchor);
-        $this->assertTrue(
+        self::assertTrue(
             $vectorsClass->getAnchorPoint()->equals($anchor)
         );
-        $this->assertEquals($xValue, $vectorsClass->x);
+        self::assertEquals($xValue, $vectorsClass->x);
     }
 
     /**
@@ -172,29 +172,33 @@ class HasVectorsTest extends TestCase
      * When getPointsLine is called with the provided points
      * Then a collection of points between start and end (inclusive) will be returned.
      *
-     * @covers ::getPointsLine
-     *
      * @dataProvider linePointsProvider
+     *
+     * @param array $start
+     * @param array $end
+     * @param array $expected
+     *
+     * @covers ::getPointsLine
      */
-    public function testGetPointsLine(array $start, array $end, array $expected)
+    final public function testGetPointsLine(array $start, array $end, array $expected): void
     {
         $startPoint = new Vector(...$start);
         $endPoint = new Vector(...$end);
         $vectorsClass = $this->makeHasVectorsClass();
         $results = $vectorsClass->getPointsLine($startPoint, $endPoint);
 
-        $this->assertCount(count($expected), $results);
-        $resultsArray = $results->map(fn ($result) => array_values($result->toArray()))->toArray();
+        self::assertCount(count($expected), $results);
+        $resultsArray = $results->map(fn($result) => array_values($result->toArray()))->toArray();
 
         foreach ($expected as $point) {
-            $this->assertContains($point, $resultsArray);
+            self::assertContains($point, $resultsArray);
         }
     }
 
     /**
      * Sample sets for getLinePoints
      */
-    public function linePointsProvider()
+    final public function linePointsProvider(): array
     {
         return [
             'start and end are equal return one point' => [
@@ -252,26 +256,31 @@ class HasVectorsTest extends TestCase
      *
      * @covers ::getPlanarPoints
      *
+     * @param array $start
+     * @param array $dimensions
+     * @param array $expected
+     * @param array|string[] $axis
+     *
      * @dataProvider planarPointsProvider
      */
-    public function testGetPlanarPoints(array $start, array $dimensions, array $expected, array $axis = ['x', 'y'])
+    final public function testGetPlanarPoints(array $start, array $dimensions, array $expected, array $axis = ['x', 'y']): void
     {
         $startPoint = new Vector(...$start);
         $dimensionPoint = new Vector(...$dimensions);
         $vectorsClass = $this->makeHasVectorsClass();
         $results = $vectorsClass->getPlanarPoints($startPoint, $dimensionPoint, ...$axis);
 
-        $this->assertCount(count($expected), $results);
-        $resultsArray = $results->map(fn ($result) => array_values($result->toArray()))->toArray();
+        self::assertCount(count($expected), $results);
+        $resultsArray = $results->map(fn($result) => array_values($result->toArray()))->toArray();
         foreach ($expected as $point) {
-            $this->assertContains($point, $resultsArray);
+            self::assertContains($point, $resultsArray);
         }
     }
 
     /**
      * Sample sets for getPlanarPoints
      */
-    public function planarPointsProvider()
+    final public function planarPointsProvider(): array
     {
         return [
             'start and dimensions are equal return one point' => [
@@ -331,16 +340,16 @@ class HasVectorsTest extends TestCase
      *
      * @covers ::getVectors
      */
-    public function testGetVectorsReturnsAllPointsWithinThisShape()
+    final public function testGetVectorsReturnsAllPointsWithinThisShape(): void
     {
         $vectorsClass = $this->makeHasVectorsClass(['x' => 5, 'y' => 7, 'width' => 2, 'height' => 2]);
         $results = $vectorsClass->getVectors();
-        $this->assertCount(4, $results);
-        $resultsArray = $results->map(fn ($result) => array_values($result->toArray()))->toArray();
-        $this->assertContains([5, 7, 0], $resultsArray);
-        $this->assertContains([6, 7, 0], $resultsArray);
-        $this->assertContains([5, 8, 0], $resultsArray);
-        $this->assertContains([6, 8, 0], $resultsArray);
+        self::assertCount(4, $results);
+        $resultsArray = $results->map(fn($result) => array_values($result->toArray()))->toArray();
+        self::assertContains([5, 7, 0], $resultsArray);
+        self::assertContains([6, 7, 0], $resultsArray);
+        self::assertContains([5, 8, 0], $resultsArray);
+        self::assertContains([6, 8, 0], $resultsArray);
     }
 
     /**
@@ -348,29 +357,33 @@ class HasVectorsTest extends TestCase
      *
      * @param array $attributes
      *
-     * @return anonymous
+     * @return object
      */
-    private function makeHasVectorsClass(array $attributes = [])
+    private function makeHasVectorsClass(array $attributes = []): object
     {
-        return new class($attributes)
-        {
+        return new class($attributes) {
             use HasVectors;
 
-            public function __construct(array $attributes = [])
+            final public function __construct(array $attributes = [])
             {
                 foreach ($attributes as $name => $attribute) {
                     $this->{$name} = $attribute;
                 }
             }
 
-            public function __get($name)
+            final public function __get(string $name): mixed
             {
                 return $this->{$name} ?? null;
             }
 
-            public function __set($name, $attribute)
+            final public function __set(string $name, mixed $attribute): void
             {
                 $this->{$name} = $attribute;
+            }
+
+            final public function __isset(string $name): bool
+            {
+                return isset($this->{$name});
             }
         };
     }

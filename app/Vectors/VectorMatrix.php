@@ -4,6 +4,7 @@ namespace App\Vectors;
 
 use App\Vectors\Traits\HasVectors;
 use Illuminate\Support\Collection;
+use OutOfBoundsException;
 
 /**
  * Manage a matrix where vectors can be stored.
@@ -59,10 +60,8 @@ class VectorMatrix extends Collection
      * @param Vector $vector
      *
      * @return Vector
-     *
-     * @throws VectorException
      */
-    public function assignVector(Vector $vector): Vector
+    final public function assignVector(Vector $vector): Vector
     {
         if (!$this->hasVector(...$vector->toArray())) {
             $this->throwException(...$vector->toArray());
@@ -80,7 +79,7 @@ class VectorMatrix extends Collection
      *
      * @return self
      */
-    public function assignVectors(Collection $vectors): self
+    final public function assignVectors(Collection $vectors): self
     {
         $vectors->each([$this, 'assignVector']);
         return $this;
@@ -91,7 +90,7 @@ class VectorMatrix extends Collection
      *
      * @return bool
      */
-    public function canUseVectors(Collection $vectors): bool
+    final public function canUseVectors(Collection $vectors): bool
     {
         $availVectors = $this->getAvailableVectors();
         return $vectors->every(
@@ -106,7 +105,7 @@ class VectorMatrix extends Collection
      *
      * @return self
      */
-    public function create(): self
+    final public function create(): self
     {
         for ($z = 0; $z < $this->depth; ++$z) {
             $layer = new Collection();
@@ -125,7 +124,7 @@ class VectorMatrix extends Collection
     /**
      * @return Collection
      */
-    public function getAvailableVectors(): Collection
+    final public function getAvailableVectors(): Collection
     {
         return $this->getMatrixVectors()->filter(fn(Vector $vector) => $vector->getBelongsTo() === $this);
     }
@@ -139,9 +138,10 @@ class VectorMatrix extends Collection
      *
      * @return Vector
      */
-    public function getVector(int $x = 0, int $y = 0, int $z = 0): Vector
+    final public function getVector(int $x = 0, int $y = 0, int $z = 0): Vector
     {
         if (!$this->hasVector($x, $y, $z)) {
+            $this->throwException($x, $y, $z);
         }
         return $this->get($z)->get($y)->get($x);
     }
@@ -149,7 +149,7 @@ class VectorMatrix extends Collection
     /**
      * @return Collection
      */
-    public function getMatrixVectors(): Collection
+    final public function getMatrixVectors(): Collection
     {
         $vectors = new Collection();
         for ($z = 0; $z < $this->depth; ++$z) {
@@ -177,7 +177,7 @@ class VectorMatrix extends Collection
      *
      * @return bool
      */
-    public function hasVector(int $x = 0, int $y = 0, int $z = 0): bool
+    final public function hasVector(int $x = 0, int $y = 0, int $z = 0): bool
     {
         return $this->has($z)
             && $this->get($z)->has($y)
@@ -193,7 +193,7 @@ class VectorMatrix extends Collection
      *
      * @return $this
      */
-    public function removeVector(int $x = 0, int $y = 0, int $z = 0): self
+    final public function removeVector(int $x = 0, int $y = 0, int $z = 0): self
     {
         if (!$this->hasVector($x, $y, $z)) {
             $this->throwException($x, $y, $z);
@@ -209,9 +209,9 @@ class VectorMatrix extends Collection
      * @param int $y
      * @param int $z
      */
-    private function throwException($x = 0, $y = 0, $z = 0): void
+    private function throwException(int $x = 0, int $y = 0, int $z = 0): void
     {
-        throw new \OutOfBoundsException(
+        throw new OutOfBoundsException(
             "Vector ('x': {$x}, 'y': {$y}, 'x': {$z}) "
             . "not found in Matrix ('width': {$this->width}, 'height': {$this->height}, 'depth': {$this->depth})"
         );

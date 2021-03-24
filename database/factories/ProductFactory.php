@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Product;
+use Exception;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ProductFactory extends Factory
@@ -18,16 +19,18 @@ class ProductFactory extends Factory
      * Define the model's default state.
      *
      * @return array
+     *
+     * @throws Exception
      */
-    public function definition()
+    final public function definition(): array
     {
         $skuLetters = explode(',', 'B,C,D,F,G,H,J,K,L,M,N,P,Q,R,S,T,V,W,X,Y,Z');
-        $skuLength = mt_rand(3, 6);
+        $skuLength = random_int(3, 6);
         $sku = '';
         for ($i = 0; $i < $skuLength; ++$i) {
-            $sku .= $skuLetters[mt_rand(0, count($skuLetters) - 1)];
+            $sku .= $skuLetters[random_int(0, count($skuLetters) - 1)];
         }
-        $size = mt_rand(1, 5) . 'x' . mt_rand(1, 5);
+        $size = random_int(1, 5) . 'x' . random_int(1, 5);
         return [
             'title' => $this->faker->text(100),
             'vendor' => $this->faker->text(50),
@@ -35,7 +38,7 @@ class ProductFactory extends Factory
             'size' => $size,
             'price' => $this->faker->randomFloat(2, 1, 1000),
             'handle' => $this->faker->text(75),
-            'inventory_quantity' => mt_rand(1, 999),
+            'inventory_quantity' => random_int(1, 999),
             'sku' => $sku,
             'design_url' => $this->faker->domainName(),
             'published_state' => $this->faker->randomElement(['inactive', 'active']),
@@ -47,11 +50,11 @@ class ProductFactory extends Factory
      *
      * @return Factory
      */
-    public function unit()
+    final public function unit(): Factory
     {
         return $this->state(
-            fn () => [
-                'id' => mt_rand(1, 999),
+            fn() => [
+                'id' => random_int(1, 999),
             ]
         );
     }

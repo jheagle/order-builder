@@ -2,6 +2,9 @@
 
 namespace App\Vectors;
 
+use JetBrains\PhpStorm\ArrayShape;
+use JetBrains\PhpStorm\Pure;
+
 /**
  * Store a whole number point in space.
  *
@@ -13,7 +16,7 @@ class Vector
     public int $y = 0;
     public int $z = 0;
 
-    protected mixed $belongsTo;
+    private mixed $belongsTo;
 
     /**
      * Generate a Vector instance.
@@ -23,7 +26,7 @@ class Vector
      * @param int $z
      * @param mixed|null $belongsTo
      */
-    public function __construct(int $x = 0, int $y = 0, int $z = 0, $belongsTo = null)
+    public function __construct(int $x = 0, int $y = 0, int $z = 0, mixed $belongsTo = null)
     {
         $this->x = $x;
         $this->y = $y;
@@ -39,7 +42,7 @@ class Vector
      *
      * @return Vector
      */
-    public function add(Vector $vector, $belongsTo = null): Vector
+    #[Pure] final public function add(Vector $vector, mixed $belongsTo = null): Vector
     {
         return new static(
             $this->x + $vector->x,
@@ -56,7 +59,7 @@ class Vector
      *
      * @return Vector
      */
-    public function diff(Vector $vector): Vector
+    #[Pure] final public function diff(Vector $vector): Vector
     {
         return new static(
             $vector->x - $this->x,
@@ -72,7 +75,7 @@ class Vector
      *
      * @return bool
      */
-    public function equals(Vector $vector): bool
+    final public function equals(Vector $vector): bool
     {
         return $this->x === $vector->x
             && $this->y === $vector->y
@@ -84,7 +87,7 @@ class Vector
      *
      * @return mixed
      */
-    public function getBelongsTo()
+    final public function getBelongsTo(): mixed
     {
         return $this->belongsTo;
     }
@@ -96,32 +99,29 @@ class Vector
      *
      * @return Vector
      */
-    public function getDirection(Vector $vector): Vector
+    #[Pure] final public function getDirection(Vector $vector): Vector
     {
         $diff = $this->diff($vector);
+        $x = $diff->x > 0 ? 1 : -1;
+        $y = $diff->y > 0 ? 1 : -1;
+        $z = $diff->z > 0 ? 1 : -1;
         return new static(
-            $diff->x !== 0
-                ? ($diff->x > 0 ? 1 : -1)
-                : 0,
-            $diff->y !== 0
-                ? ($diff->y > 0 ? 1 : -1)
-                : 0,
-            $diff->z !== 0
-                ? ($diff->z > 0 ? 1 : -1)
-                : 0,
+            $diff->x !== 0 ? $x : 0,
+            $diff->y !== 0 ? $y : 0,
+            $diff->z !== 0 ? $z : 0,
         );
     }
 
     /**
-     * Given a Vecor of lengths, find the Vector on the opposite side of this shape.
+     * Given a Vector of lengths, find the Vector on the opposite side of this shape.
      *
      * @param Vector $dimensions
      * @param Vector|null $direction
-     * @param null $belongsTo
+     * @param mixed $belongsTo
      *
      * @return Vector
      */
-    public function getEndPoint(Vector $dimensions, Vector $direction = null, $belongsTo = null): Vector
+    #[Pure] final public function getEndPoint(Vector $dimensions, Vector $direction = null, mixed $belongsTo = null): Vector
     {
         if (is_null($direction)) {
             $direction = new Vector(1, 1, 1);
@@ -138,7 +138,7 @@ class Vector
         return new static($xValue, $yValue, $zValue, $belongsTo);
     }
 
-    public function toArray(): array
+    #[ArrayShape(['x' => "int", 'y' => "int", 'z' => "int"])] final public function toArray(): array
     {
         return [
             'x' => $this->x,

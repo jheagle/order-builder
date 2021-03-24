@@ -2,13 +2,24 @@
 
 namespace App\Models;
 
-use App\Models\Product;
-use App\Models\OrderItem;
-use App\Models\PrintSheet;
 use App\Vectors\Traits\HasVectors;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property mixed print_sheet_id
+ * @property int|mixed product_id
+ * @property mixed order_item_id
+ * @property mixed|string status
+ * @property mixed|string image_url
+ * @property mixed size
+ * @property int|mixed x_pos
+ * @property int|mixed y_pos
+ * @property mixed|string|string[]|null width
+ * @property mixed|string|string[]|null height
+ * @property mixed identifier
+ */
 class PrintSheetItem extends Model
 {
     use HasFactory;
@@ -34,17 +45,17 @@ class PrintSheetItem extends Model
         'height' => 'height',
     ];
 
-    public function orderItem()
+    final public function orderItem(): BelongsTo
     {
         return $this->belongsTo(OrderItem::class);
     }
 
-    public function printSheet()
+    final public function printSheet(): BelongsTo
     {
         return $this->belongsTo(PrintSheet::class);
     }
 
-    public function product()
+    final public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }

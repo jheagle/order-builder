@@ -5,6 +5,7 @@ namespace Tests\Unit\Vectors;
 use App\Vectors\Vector;
 use App\Vectors\VectorMatrix;
 use Illuminate\Support\Collection;
+use OutOfBoundsException;
 use Tests\TestCase;
 
 /**
@@ -27,15 +28,15 @@ class VectorMatrixTest extends TestCase
      *
      * @covers ::create
      */
-    public function testCreateVectorMatrix()
+    final public function testCreateVectorMatrix(): void
     {
         $matrix = new VectorMatrix();
-        $this->assertEmpty($matrix->getMatrixVectors());
+        self::assertEmpty($matrix->getMatrixVectors());
         $matrix->width = 10;
         $matrix->height = 15;
         $matrix->depth = 5;
         $matrix->create();
-        $this->assertCount(750, $this->testGetMatrixVectors());
+        self::assertCount(750,$matrix->getMatrixVectors());
     }
 
     /**
@@ -45,11 +46,11 @@ class VectorMatrixTest extends TestCase
      *
      * @covers ::assignVector
      */
-    public function testAssignVectorWithEmptyMatrixThrowsException()
+    final public function testAssignVectorWithEmptyMatrixThrowsException(): void
     {
         $matrix = new VectorMatrix();
         $vector = new Vector(0, 0, 0);
-        $this->expectException(\OutOfBoundsException::class);
+        $this->expectException(OutOfBoundsException::class);
         $matrix->assignVector($vector);
     }
 
@@ -60,11 +61,11 @@ class VectorMatrixTest extends TestCase
      *
      * @covers ::assignVector
      */
-    public function testAssignVectorWithInvalidPositionThrowsException()
+    final public function testAssignVectorWithInvalidPositionThrowsException(): void
     {
         $matrix = (new VectorMatrix())->create();
         $vector = new Vector(0, 1, 0);
-        $this->expectException(\OutOfBoundsException::class);
+        $this->expectException(OutOfBoundsException::class);
         $matrix->assignVector($vector);
     }
 
@@ -75,7 +76,7 @@ class VectorMatrixTest extends TestCase
      *
      * @covers ::assignVector
      */
-    public function testAssignVectorWithinMatrixWillApplyNewVector()
+    final public function testAssignVectorWithinMatrixWillApplyNewVector(): void
     {
         $matrix = (new VectorMatrix(2, 2, 1))->create();
         $assignedValue = 'assigned value';
@@ -84,7 +85,7 @@ class VectorMatrixTest extends TestCase
         $z = 0;
         $vector = new Vector($x, $y, $z, $assignedValue);
         $matrix->assignVector($vector);
-        $this->assertEquals($assignedValue, $matrix->getVector($x, $y, $z)->getBelongsTo());
+        self::assertEquals($assignedValue, $matrix->getVector($x, $y, $z)->getBelongsTo());
     }
 
     /**
@@ -94,7 +95,7 @@ class VectorMatrixTest extends TestCase
      *
      * @covers ::assignVectors
      */
-    public function testAssignVectors()
+    final public function testAssignVectors(): void
     {
         $matrix = (new VectorMatrix(11, 16, 10))->create();
         $one = new Vector(0, 0, 0, 'assigned value one');
@@ -103,10 +104,10 @@ class VectorMatrixTest extends TestCase
         $four = new Vector(10, 5, 9, 'assigned value four');
         $vectors = new Collection([$one, $two, $three, $four]);
         $matrix->assignVectors($vectors);
-        $this->assertEquals($one->getBelongsTo(), $matrix->getVector(...$one->toArray())->getBelongsTo());
-        $this->assertEquals($two->getBelongsTo(), $matrix->getVector(...$two->toArray())->getBelongsTo());
-        $this->assertEquals($three->getBelongsTo(), $matrix->getVector(...$three->toArray())->getBelongsTo());
-        $this->assertEquals($four->getBelongsTo(), $matrix->getVector(...$four->toArray())->getBelongsTo());
+        self::assertEquals($one->getBelongsTo(), $matrix->getVector(...$one->toArray())->getBelongsTo());
+        self::assertEquals($two->getBelongsTo(), $matrix->getVector(...$two->toArray())->getBelongsTo());
+        self::assertEquals($three->getBelongsTo(), $matrix->getVector(...$three->toArray())->getBelongsTo());
+        self::assertEquals($four->getBelongsTo(), $matrix->getVector(...$four->toArray())->getBelongsTo());
     }
 
     /**
@@ -116,9 +117,9 @@ class VectorMatrixTest extends TestCase
      *
      * @covers ::canUseVectors
      */
-    public function testCanUseVectors()
+    final public function testCanUseVectors(): void
     {
-        $this->markTestIncomplete(
+        self::markTestIncomplete(
             'This test has not been implemented yet.'
         );
     }
@@ -130,9 +131,9 @@ class VectorMatrixTest extends TestCase
      *
      * @covers ::getAvailableVectors
      */
-    public function testGetAvailableVectors()
+    final public function testGetAvailableVectors(): void
     {
-        $this->markTestIncomplete(
+        self::markTestIncomplete(
             'This test has not been implemented yet.'
         );
     }
@@ -144,9 +145,9 @@ class VectorMatrixTest extends TestCase
      *
      * @covers ::getMatrixVectors
      */
-    public function testGetMatrixVectors()
+    final public function testGetMatrixVectors(): void
     {
-        $this->markTestIncomplete(
+        self::markTestIncomplete(
             'This test has not been implemented yet.'
         );
     }

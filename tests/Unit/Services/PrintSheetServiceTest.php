@@ -30,7 +30,7 @@ class PrintSheetServiceTest extends TestCase
      *
      * @return void
      */
-    protected function setUp(): void
+    final public function setUp(): void
     {
         parent::setUp();
 
@@ -44,7 +44,7 @@ class PrintSheetServiceTest extends TestCase
      *
      * @covers ::buildPrintSheetItems
      */
-    public function testCreateASinglePrintSheetItem()
+    final public function testCreateASinglePrintSheetItem(): void
     {
         $product = Product::factory()->unit()->make();
         $orderItem = OrderItem::factory([
@@ -57,11 +57,11 @@ class PrintSheetServiceTest extends TestCase
         $height = Str::after($product->size, 'x');
         $printSheetItem = $this->service->buildPrintSheetItems($printSheet, $orderItem)->first();
 
-        $this->assertEquals($printSheet->id, $printSheetItem->print_sheet_id);
-        $this->assertEquals($orderItem->id, $printSheetItem->order_item_id);
-        $this->assertEquals(PrintSheetItem::STATUS_PASS, $printSheetItem->status);
-        $this->assertEquals($width, $printSheetItem->width);
-        $this->assertEquals($height, $printSheetItem->height);
+        self::assertEquals($printSheet->id, $printSheetItem->print_sheet_id);
+        self::assertEquals($orderItem->id, $printSheetItem->order_item_id);
+        self::assertEquals(PrintSheetItem::STATUS_PASS, $printSheetItem->status);
+        self::assertEquals($width, $printSheetItem->width);
+        self::assertEquals($height, $printSheetItem->height);
     }
 
     /**
@@ -71,7 +71,7 @@ class PrintSheetServiceTest extends TestCase
      *
      * @covers ::buildPrintSheetItems
      */
-    public function testCreateMultiplePrintSheetItems()
+    final public function testCreateMultiplePrintSheetItems(): void
     {
         $product = Product::factory()->unit()->make();
         $quantity = 5;
@@ -83,14 +83,14 @@ class PrintSheetServiceTest extends TestCase
         $printSheet = PrintSheet::factory()->unit()->make();
         $printSheetItems = $this->service->buildPrintSheetItems($printSheet, $orderItem);
 
-        $this->assertCount($quantity, $printSheetItems);
+        self::assertCount($quantity, $printSheetItems);
 
         $printSheetItems->each(function (PrintSheetItem $printSheetItem) use ($product) {
             $width = Str::before($product->size, 'x');
             $height = Str::after($product->size, 'x');
-            $this->assertEquals(PrintSheetItem::STATUS_PASS, $printSheetItem->status);
-            $this->assertEquals($width, $printSheetItem->width);
-            $this->assertEquals($height, $printSheetItem->height);
+            self::assertEquals(PrintSheetItem::STATUS_PASS, $printSheetItem->status);
+            self::assertEquals($width, $printSheetItem->width);
+            self::assertEquals($height, $printSheetItem->height);
         });
     }
 }

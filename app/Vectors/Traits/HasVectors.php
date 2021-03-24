@@ -2,7 +2,6 @@
 
 namespace App\Vectors\Traits;
 
-use Exception;
 use App\Vectors\Vector;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -59,8 +58,12 @@ trait HasVectors
 
     /**
      * Apply new vector values onto this class
+     *
+     * @param Vector $vector
+     *
+     * @return $this
      */
-    final public function setAnchorPoint(Vector $vector)
+    final public function setAnchorPoint(Vector $vector): self
     {
         $xField = Arr::get($this->coordinates, 'x', 'x');
         $yField = Arr::get($this->coordinates, 'y', 'y');
@@ -78,6 +81,7 @@ trait HasVectors
         if (!is_null($this->{$zField})) {
             data_set($this, $zField, $vector->z);
         }
+        return $this;
     }
 
     /**
@@ -90,7 +94,7 @@ trait HasVectors
      *
      * @return Collection
      */
-    public function getPlanarPoints(Vector $anchor, Vector $dimensions, string $rowAxis = 'x', string $columnAxis = 'y'): Collection
+    final public function getPlanarPoints(Vector $anchor, Vector $dimensions, string $rowAxis = 'x', string $columnAxis = 'y'): Collection
     {
         $direction = new Vector(1, 1, 1);
         $endPoint = $anchor->getEndPoint($dimensions, $direction, $this);
@@ -119,7 +123,7 @@ trait HasVectors
                 $this
             );
         }
-        return $planarPoints->concat($this->getPointsLine($columnEnd, $stepper));;
+        return $planarPoints->concat($this->getPointsLine($columnEnd, $stepper));
     }
 
     /**
@@ -130,7 +134,7 @@ trait HasVectors
      *
      * @return Collection
      */
-    public function getPointsLine(Vector $start, Vector $end): Collection
+    final public function getPointsLine(Vector $start, Vector $end): Collection
     {
         $line = new Collection();
         if ($start->equals($end)) {
@@ -145,12 +149,12 @@ trait HasVectors
     }
 
     /**
-     * Return a colleciton of all the vectors consumed by this object.
+     * Return a collection of all the vectors consumed by this object.
      * NOTE: This does not yet implement vertices on in three dimensions.
      *
      * @return Collection
      */
-    public function getVectors(): Collection
+    final public function getVectors(): Collection
     {
         return $this->getPlanarPoints($this->getAnchorPoint(), $this->getDimensions());
     }

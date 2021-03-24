@@ -4,8 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\OrderItem;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int|mixed order_number
+ * @property int|mixed customer_id
+ * @property mixed|string order_status
+ * @property mixed total_price
+ * @property mixed id
+ * @property mixed orderItems
+ */
 class Order extends Model
 {
     use HasFactory;
@@ -24,7 +32,7 @@ class Order extends Model
         self::STATUS_RESEND,
     ];
 
-    public function orderItems()
+    final public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }

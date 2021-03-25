@@ -36,7 +36,7 @@ class VectorMatrixTest extends TestCase
         $matrix->height = 15;
         $matrix->depth = 5;
         $matrix->create();
-        self::assertCount(750,$matrix->getMatrixVectors());
+        self::assertCount(750, $matrix->getMatrixVectors());
     }
 
     /**
@@ -111,44 +111,71 @@ class VectorMatrixTest extends TestCase
     }
 
     /**
-     * Given
-     * When
-     * Then
+     * Given a matrix with vectors
+     * When calling getMatrixVectors on the matrix
+     * Then a collection of all the vectors contained in the matrix will be returned.
      *
-     * @covers ::canUseVectors
+     * @covers ::getMatrixVectors
      */
-    final public function testCanUseVectors(): void
+    final public function testGetMatrixVectorsAllVectorsContainedInMatrix(): void
     {
-        self::markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
+        $matrix = (new VectorMatrix(2, 2, 2))->create();
+        self::assertCount(8, $matrix->getMatrixVectors());
     }
 
     /**
-     * Given
-     * When
-     * Then
+     * Given a matrix with vectors
+     * When some of the vectors are occupied, and calling getAvailableVectors
+     * Then a collection of the unoccupied vectors will be returned
      *
      * @covers ::getAvailableVectors
      */
     final public function testGetAvailableVectors(): void
     {
-        self::markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
+        $matrix = (new VectorMatrix(3, 3, 3))->create();
+        self::assertCount(27, $matrix->getAvailableVectors());
+        $matrix->assignVectors(new Collection([
+            new Vector(0, 1, 2),
+            new Vector(2, 1, 0),
+        ]));
+        self::assertCount(25, $matrix->getAvailableVectors());
     }
 
     /**
-     * Given
+     * Given a set of vectors and a matrix with vectors
+     * When those vectors exist or do not exits in the matrix
+     * Then canUseVectors will will return true for all existing, otherwise false when any nonexistent
+     *
+     * @covers ::canUseVectors
+     */
+    final public function testCanUseVectors(): void
+    {
+        $badVectors = new Collection([
+            new Vector(5, 1, 2),
+            new Vector(2, -1, 0),
+        ]);
+        $assignVectors = new Collection([
+            new Vector(0, 1, 2),
+            new Vector(2, 1, 0),
+        ]);
+        $matrix = (new VectorMatrix(3, 3, 3))->create();
+        self::assertCount(27, $matrix->getAvailableVectors());
+        self::assertFalse($matrix->canUseVectors($badVectors));
+        self::assertTrue($matrix->canUseVectors($assignVectors));
+        $matrix->assignVectors($assignVectors);
+        self::assertFalse($matrix->canUseVectors($assignVectors));
+    }
+
+    /**
+     * Given an incoming VectorModel
      * When
      * Then
      *
-     * @covers ::getMatrixVectors
+     * @covers ::assignAvailablePosition
      */
-    final public function testGetMatrixVectors(): void
+    final public function testAssignAvailablePosition(): void
     {
-        self::markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
+        //TODO: Add at least four tests for this method, there error states, and one success
+        self::markTestIncomplete('This test needs to be written');
     }
 }

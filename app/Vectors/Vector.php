@@ -2,6 +2,7 @@
 
 namespace App\Vectors;
 
+use Illuminate\Contracts\Support\Arrayable;
 use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\Pure;
 
@@ -10,7 +11,7 @@ use JetBrains\PhpStorm\Pure;
  *
  * @package App\Vectors
  */
-class Vector
+class Vector implements Arrayable
 {
     public int $x = 0;
     public int $y = 0;

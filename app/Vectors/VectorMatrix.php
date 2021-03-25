@@ -2,7 +2,9 @@
 
 namespace App\Vectors;
 
+use App\Vectors\Contracts\VectorModel;
 use App\Vectors\Traits\HasVectors;
+use Exception;
 use Illuminate\Support\Collection;
 use OutOfBoundsException;
 
@@ -55,6 +57,40 @@ class VectorMatrix extends Collection
     }
 
     /**
+     * Assign next available space to the Print Sheet Item
+     *
+     * @param VectorModel $vectorModel
+     *
+     * @return VectorModel
+     *
+     * @throws Exception
+     */
+    final public function assignAvailablePosition(VectorModel $vectorModel): VectorModel
+    {
+        if (!in_array(HasVectors::class, class_uses($vectorModel), true)) {
+            throw new Exception('There are no vectors on ' . get_class($vectorModel));
+        }
+        $foundSpace = false;
+        $sheetVectors = $vectorModel->getVectors();
+        if ($sheetVectors->count() > $this->getAvailableVectors()->count()) {
+            throw new Exception('There is no available space for ' . get_class($vectorModel));
+        }
+        foreach ($this->getAvailableVectors() as $availVector) {
+            $vectorModel->setAnchorPoint($availVector);
+            if ($this->canUseVectors($vectorModel->getVectors())) {
+                $this->assignVectors($sheetVectors);
+                $foundSpace = true;
+                break;
+            }
+            $sheetVectors = $vectorModel->getVectors();
+        }
+        if (!$foundSpace) {
+            throw new Exception('There is no available space for ' . get_class($vectorModel));
+        }
+        return $vectorModel;
+    }
+
+    /**
      * Apply a Vector so a specified position in the matrix.
      *
      * @param Vector $vector
@@ -86,6 +122,8 @@ class VectorMatrix extends Collection
     }
 
     /**
+     * Check a set of vectors to see if they fit within the available vectors of this matrix
+     *
      * @param Collection $vectors
      *
      * @return bool
@@ -122,6 +160,8 @@ class VectorMatrix extends Collection
     }
 
     /**
+     * Get all of the vectors within this matrix that are not occupied.
+     *
      * @return Collection
      */
     final public function getAvailableVectors(): Collection
@@ -130,23 +170,8 @@ class VectorMatrix extends Collection
     }
 
     /**
-     * Retrieve a Vector by coordinates
+     * Retrieve a collection of all vectors from this matrix
      *
-     * @param int $x
-     * @param int $y
-     * @param int $z
-     *
-     * @return Vector
-     */
-    final public function getVector(int $x = 0, int $y = 0, int $z = 0): Vector
-    {
-        if (!$this->hasVector($x, $y, $z)) {
-            $this->throwException($x, $y, $z);
-        }
-        return $this->get($z)->get($y)->get($x);
-    }
-
-    /**
      * @return Collection
      */
     final public function getMatrixVectors(): Collection
@@ -166,6 +191,23 @@ class VectorMatrix extends Collection
             }
         }
         return $vectors;
+    }
+
+    /**
+     * Retrieve a Vector by coordinates
+     *
+     * @param int $x
+     * @param int $y
+     * @param int $z
+     *
+     * @return Vector
+     */
+    final public function getVector(int $x = 0, int $y = 0, int $z = 0): Vector
+    {
+        if (!$this->hasVector($x, $y, $z)) {
+            $this->throwException($x, $y, $z);
+        }
+        return $this->get($z)->get($y)->get($x);
     }
 
     /**

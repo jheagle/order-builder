@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Vectors\Contracts\VectorModel;
 use App\Vectors\Traits\HasVectors;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property mixed|string|string[]|null height
  * @property mixed identifier
  */
-class PrintSheetItem extends Model
+class PrintSheetItem extends Model implements VectorModel
 {
     use HasFactory;
     use HasVectors;

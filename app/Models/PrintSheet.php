@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property mixed|string type
  * @property mixed|string sheet_url
  * @property mixed id
+ * @property mixed printSheetItems
  */
 class PrintSheet extends Model
 {

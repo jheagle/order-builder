@@ -30,7 +30,7 @@ class SetPrintItemPositionsTest extends TestCase
      *
      * @return void
      */
-    protected function setUp(): void
+    final public function setUp(): void
     {
         parent::setUp();
 
@@ -45,18 +45,18 @@ class SetPrintItemPositionsTest extends TestCase
      * @param array $sheetItems
      * @param array $expected
      */
-    public function testPositionSet(array $sheetItems, array $expected): void
+    final public function testPositionSet(array $sheetItems, array $expected): void
     {
         $sheetItemCollection = $this->makeSheetItems($sheetItems);
         $expectedVectors = $this->makeVectorCollection($expected);
 
         $matrix = (new VectorMatrix($this->service::SHEET_WIDTH, $this->service::SHEET_HEIGHT))->create();
         $sheetItemCollection = $this->service->sortPrintSheetItems($sheetItemCollection)->map(
-            fn ($sheetItem) => $this->service->assignAvailablePosition($sheetItem, $matrix)
+            fn ($sheetItem) => $matrix->assignAvailablePosition($sheetItem)
         );
 
-        $this->assertCount($expectedVectors->count(), $sheetItems);
-        $this->assertTrue($sheetItemCollection->every(
+        self::assertCount($expectedVectors->count(), $sheetItems);
+        self::assertTrue($sheetItemCollection->every(
             function ($sheetItem) use ($expectedVectors): bool {
                 $sheetVector = $sheetItem->getAnchorPoint();
                 return $expectedVectors->contains(fn (Vector $vector) => $vector->equals($sheetVector));
@@ -69,7 +69,7 @@ class SetPrintItemPositionsTest extends TestCase
      *
      * @return int[]
      */
-    public function sheetItemProvider(): array
+    final public function sheetItemProvider(): array
     {
         return [
             'single 5x2 should be top left' => [
@@ -96,7 +96,7 @@ class SetPrintItemPositionsTest extends TestCase
     private function makeSheetItems(array $itemDimensions): Collection
     {
         return new Collection(
-            array_map(function (array $dimensions): PrintSheetItem {
+            array_map(static function (array $dimensions): PrintSheetItem {
                 return PrintSheetItem::factory([
                     'x_pos' => 0,
                     'y_pos' => 0,
@@ -117,7 +117,7 @@ class SetPrintItemPositionsTest extends TestCase
     private function makeVectorCollection(array $vectorCoordinates): Collection
     {
         return new Collection(
-            array_map(function (array $coordinates): Vector {
+            array_map(static function (array $coordinates): Vector {
                 return new Vector(...$coordinates);
             }, $vectorCoordinates)
         );

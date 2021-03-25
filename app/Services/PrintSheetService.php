@@ -9,9 +9,7 @@ use App\Models\PrintSheet;
 use Illuminate\Support\Str;
 use App\Vectors\VectorMatrix;
 use App\Models\PrintSheetItem;
-use App\Vectors\Traits\HasVectors;
 use Illuminate\Support\Collection;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * Manage Orders
@@ -47,7 +45,7 @@ class PrintSheetService
         $matrix = (new VectorMatrix(self::SHEET_WIDTH, self::SHEET_HEIGHT))->create();
         $this->sortPrintSheetItems($printSheetItems)
             ->each(function (PrintSheetItem $sheetItem) use ($matrix) {
-                $this->assignAvailablePosition($sheetItem, $matrix);
+                $matrix->assignAvailablePosition($sheetItem);
                 $sheetItem->save();
             });
 
@@ -100,40 +98,5 @@ class PrintSheetService
             $largestSide = $highestHeight->height > $highestWidth->width ? $highestHeight : $highestWidth;
             return $largestSide === $a ? -1 : 1;
         })->values();
-    }
-
-    /**
-     * Assign next available space to the Print Sheet Item
-     *
-     * @param PrintSheetItem $sheetItem
-     * @param VectorMatrix $matrix
-     *
-     * @return Model
-     *
-     * @throws Exception
-     */
-    final public function assignAvailablePosition(PrintSheetItem $sheetItem, VectorMatrix $matrix): Model
-    {
-        if (!in_array(HasVectors::class, class_uses($sheetItem), true)) {
-            throw new Exception('There are no vectors on ' . get_class($sheetItem));
-        }
-        $foundSpace = false;
-        $sheetVectors = $sheetItem->getVectors();
-        if ($sheetVectors->count() > $matrix->getAvailableVectors()->count()) {
-            throw new Exception('There is no available space for ' . get_class($sheetItem));
-        }
-        foreach ($matrix->getAvailableVectors() as $availVector) {
-            $sheetItem->setAnchorPoint($availVector);
-            if ($matrix->canUseVectors($sheetItem->getVectors())) {
-                $matrix->assignVectors($sheetVectors);
-                $foundSpace = true;
-                break;
-            }
-            $sheetVectors = $sheetItem->getVectors();
-        }
-        if (!$foundSpace) {
-            throw new Exception('There is no available space for ' . get_class($sheetItem));
-        }
-        return $sheetItem;
     }
 }

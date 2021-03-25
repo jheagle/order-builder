@@ -2,8 +2,6 @@
 
 namespace App\Vectors;
 
-use App\Vectors\Contracts\VectorModel;
-use App\Vectors\Traits\HasVectors;
 use Exception;
 use Illuminate\Support\Collection;
 use OutOfBoundsException;
@@ -15,8 +13,6 @@ use OutOfBoundsException;
  */
 class VectorMatrix extends Collection
 {
-    use HasVectors;
-
     public array $coordinates = [
         'x' => 'x',
         'y' => 'y',
@@ -67,9 +63,6 @@ class VectorMatrix extends Collection
      */
     final public function assignAvailablePosition(VectorModel $vectorModel): VectorModel
     {
-        if (!in_array(HasVectors::class, class_uses($vectorModel), true)) {
-            throw new Exception('There are no vectors on ' . get_class($vectorModel));
-        }
         $foundSpace = false;
         $sheetVectors = $vectorModel->getVectors();
         if ($sheetVectors->count() > $this->getAvailableVectors()->count()) {

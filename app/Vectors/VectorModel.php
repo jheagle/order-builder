@@ -1,20 +1,36 @@
 <?php
 
-namespace App\Vectors\Traits;
+namespace App\Vectors;
 
-use App\Vectors\Vector;
+use Eloquent;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 /**
- * Provide this classes spacial traits.
+ * Class VectorModel
  *
- * @package App\Vectors\Traits
+ * @package App\Vectors
+ * @method static Builder|VectorModel newModelQuery()
+ * @method static Builder|VectorModel newQuery()
+ * @method static Builder|VectorModel query()
+ * @mixin Eloquent
  */
-trait HasVectors
+class VectorModel extends Model
 {
     protected ?Vector $anchorPoint = null;
     protected ?Collection $vectors = null;
+
+    protected array $coordinates = [
+        'x' => 'x',
+        'y' => 'y',
+    ];
+
+    protected array $dimensions = [
+        'width' => 'width',
+        'height' => 'height',
+    ];
 
     /**
      * Retrieve this classes anchor point, which is the left(y: 0), top(x:0), foremost(z:0) point of this object.

@@ -1,10 +1,11 @@
 <?php
 
-namespace Tests\Unit\Vectors\Traits;
+namespace Tests\Unit\Vectors;
 
+use App\Vectors\VectorModel;
+use JetBrains\PhpStorm\ArrayShape;
 use Tests\TestCase;
 use App\Vectors\Vector;
-use App\Vectors\Traits\HasVectors;
 
 /**
  * Test using a class with the HasVectors trait
@@ -13,12 +14,11 @@ use App\Vectors\Traits\HasVectors;
  *
  * @group Unit
  * @group Vectors
- * @group Traits
- * @group HasVectors
+ * @group VectorModel
  *
- * @coversDefaultClass HasVectors
+ * @coversDefaultClass VectorModel
  */
-class HasVectorsTest extends TestCase
+class VectorModelTest extends TestCase
 {
     /**
      * Given a class with HasVectors
@@ -29,7 +29,7 @@ class HasVectorsTest extends TestCase
      */
     final public function testGetAnchorPointWithNoCoordinatesReturnsDefaultVector(): void
     {
-        $vectorsClass = $this->makeHasVectorsClass(['coordinates' => null]);
+        $vectorsClass = $this->makeHasVectorsClass(['coordinates' => []]);
         self::assertTrue(
             $vectorsClass->getAnchorPoint()->equals(new Vector(0, 0, 0))
         );
@@ -83,7 +83,7 @@ class HasVectorsTest extends TestCase
      */
     final public function testGetDimensionsWithNoCoordinatesReturnsDefaultVector(): void
     {
-        $vectorsClass = $this->makeHasVectorsClass(['dimensions' => null]);
+        $vectorsClass = $this->makeHasVectorsClass(['dimensions' => []]);
         self::assertTrue(
             $vectorsClass->getDimensions()->equals(new Vector(1, 1, 1))
         );
@@ -137,7 +137,7 @@ class HasVectorsTest extends TestCase
      */
     final public function testSetAnchorPointsWithNoCoordinatesWillOnlySetAnchorPointField(): void
     {
-        $vectorsClass = $this->makeHasVectorsClass(['coordinates' => null]);
+        $vectorsClass = $this->makeHasVectorsClass(['coordinates' => []]);
         $anchor = new Vector(3, 2, 1);
         $vectorsClass->setAnchorPoint($anchor);
         self::assertTrue(
@@ -198,6 +198,7 @@ class HasVectorsTest extends TestCase
     /**
      * Sample sets for getLinePoints
      */
+    #[ArrayShape(['start and end are equal return one point' => "array", 'x axis end gets all x axis points' => "array", 'y axis end gets all y axis points' => "array", 'z axis end gets all z axis points' => "array", 'changes on two axis will have all step points' => "array", 'changes on two axis with large gaps has all steps' => "array", 'changes on three axis will have all steps' => "array"])]
     final public function linePointsProvider(): array
     {
         return [
@@ -280,6 +281,7 @@ class HasVectorsTest extends TestCase
     /**
      * Sample sets for getPlanarPoints
      */
+    #[ArrayShape(['start and dimensions are equal return one point' => "array", 'start with 1x1 dimensions returns one point' => "array", '2x2 dimensions returns four points' => "array", '2x5 dimensions returns ten points' => "array", '5x2 dimensions returns ten points' => "array", '3x3 dimensions on y and z returns nine points' => "array"])]
     final public function planarPointsProvider(): array
     {
         return [
@@ -361,29 +363,14 @@ class HasVectorsTest extends TestCase
      */
     private function makeHasVectorsClass(array $attributes = []): object
     {
-        return new class($attributes) {
-            use HasVectors;
+        return new class($attributes) extends VectorModel {
 
             final public function __construct(array $attributes = [])
             {
+                parent::__construct();
                 foreach ($attributes as $name => $attribute) {
                     $this->{$name} = $attribute;
                 }
-            }
-
-            final public function __get(string $name): mixed
-            {
-                return $this->{$name} ?? null;
-            }
-
-            final public function __set(string $name, mixed $attribute): void
-            {
-                $this->{$name} = $attribute;
-            }
-
-            final public function __isset(string $name): bool
-            {
-                return isset($this->{$name});
             }
         };
     }

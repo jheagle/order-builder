@@ -29,7 +29,7 @@ class VectorModelTest extends TestCase
      */
     final public function testGetAnchorPointWithNoCoordinatesReturnsDefaultVector(): void
     {
-        $vectorsClass = $this->makeHasVectorsClass(['coordinates' => []]);
+        $vectorsClass = $this->makeVectorModelClass(['coordinates' => []]);
         self::assertTrue(
             $vectorsClass->getAnchorPoint()->equals(new Vector(0, 0, 0))
         );
@@ -44,7 +44,7 @@ class VectorModelTest extends TestCase
      */
     final public function testGetAnchorPointWithSingleCoordinateDefaultsZeros(): void
     {
-        $vectorsClass = $this->makeHasVectorsClass(['x' => 1, 'y' => 2, 'z' => 3]);
+        $vectorsClass = $this->makeVectorModelClass(['x' => 1, 'y' => 2, 'z' => 3]);
         self::assertTrue(
             $vectorsClass->getAnchorPoint()->equals(new Vector(1, 2, 3))
         );
@@ -59,7 +59,7 @@ class VectorModelTest extends TestCase
      */
     final public function testGetAnchorPointReturnsVectorBasedOnCustomFields(): void
     {
-        $vectorsClass = $this->makeHasVectorsClass([
+        $vectorsClass = $this->makeVectorModelClass([
             'coordinates' => [
                 'x' => 'x_pos',
                 'y' => 'y_pos',
@@ -83,7 +83,7 @@ class VectorModelTest extends TestCase
      */
     final public function testGetDimensionsWithNoCoordinatesReturnsDefaultVector(): void
     {
-        $vectorsClass = $this->makeHasVectorsClass(['dimensions' => []]);
+        $vectorsClass = $this->makeVectorModelClass(['dimensions' => []]);
         self::assertTrue(
             $vectorsClass->getDimensions()->equals(new Vector(1, 1, 1))
         );
@@ -98,7 +98,7 @@ class VectorModelTest extends TestCase
      */
     final public function testGetDimensionsWithSingleCoordinateDefaultsZeros(): void
     {
-        $vectorsClass = $this->makeHasVectorsClass(['width' => 1, 'height' => 2, 'depth' => 3]);
+        $vectorsClass = $this->makeVectorModelClass(['width' => 1, 'height' => 2, 'depth' => 3]);
         self::assertTrue(
             $vectorsClass->getDimensions()->equals(new Vector(1, 2, 3))
         );
@@ -113,7 +113,7 @@ class VectorModelTest extends TestCase
      */
     final public function testGetDimensionsReturnsVectorBasedOnCustomFields(): void
     {
-        $vectorsClass = $this->makeHasVectorsClass([
+        $vectorsClass = $this->makeVectorModelClass([
             'dimensions' => [
                 'width' => 'size_w',
                 'height' => 'size_h',
@@ -137,7 +137,7 @@ class VectorModelTest extends TestCase
      */
     final public function testSetAnchorPointsWithNoCoordinatesWillOnlySetAnchorPointField(): void
     {
-        $vectorsClass = $this->makeHasVectorsClass(['coordinates' => []]);
+        $vectorsClass = $this->makeVectorModelClass(['coordinates' => []]);
         $anchor = new Vector(3, 2, 1);
         $vectorsClass->setAnchorPoint($anchor);
         self::assertTrue(
@@ -154,7 +154,7 @@ class VectorModelTest extends TestCase
      */
     final public function testSetAnchorPointsWithConfiguredCoordinatesSetsFields(): void
     {
-        $vectorsClass = $this->makeHasVectorsClass([
+        $vectorsClass = $this->makeVectorModelClass([
             'coordinates' => ['x' => 'x'],
             'x' => 0,
         ]);
@@ -184,7 +184,7 @@ class VectorModelTest extends TestCase
     {
         $startPoint = new Vector(...$start);
         $endPoint = new Vector(...$end);
-        $vectorsClass = $this->makeHasVectorsClass();
+        $vectorsClass = $this->makeVectorModelClass();
         $results = $vectorsClass->getPointsLine($startPoint, $endPoint);
 
         self::assertCount(count($expected), $results);
@@ -268,7 +268,7 @@ class VectorModelTest extends TestCase
     {
         $startPoint = new Vector(...$start);
         $dimensionPoint = new Vector(...$dimensions);
-        $vectorsClass = $this->makeHasVectorsClass();
+        $vectorsClass = $this->makeVectorModelClass();
         $results = $vectorsClass->getPlanarPoints($startPoint, $dimensionPoint, ...$axis);
 
         self::assertCount(count($expected), $results);
@@ -344,7 +344,7 @@ class VectorModelTest extends TestCase
      */
     final public function testGetVectorsReturnsAllPointsWithinThisShape(): void
     {
-        $vectorsClass = $this->makeHasVectorsClass(['x' => 5, 'y' => 7, 'width' => 2, 'height' => 2]);
+        $vectorsClass = $this->makeVectorModelClass(['x' => 5, 'y' => 7, 'width' => 2, 'height' => 2]);
         $results = $vectorsClass->getVectors();
         self::assertCount(4, $results);
         $resultsArray = $results->map(fn($result) => array_values($result->toArray()))->toArray();
@@ -355,13 +355,13 @@ class VectorModelTest extends TestCase
     }
 
     /**
-     * Create an instance of a class using HasVectors trait.
+     * Create an instance of a VectorModel subclass.
      *
      * @param array $attributes
      *
-     * @return object
+     * @return VectorModel
      */
-    private function makeHasVectorsClass(array $attributes = []): object
+    private function makeVectorModelClass(array $attributes = []): VectorModel
     {
         return new class($attributes) extends VectorModel {
 

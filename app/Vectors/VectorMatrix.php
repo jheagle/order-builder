@@ -57,30 +57,23 @@ class VectorMatrix extends Collection
      *
      * @param VectorModel $vectorModel
      *
-     * @return VectorModel
+     * @return self
      *
      * @throws Exception
      */
-    final public function assignAvailablePosition(VectorModel $vectorModel): VectorModel
+    final public function assignAvailablePosition(VectorModel $vectorModel): self
     {
-        $foundSpace = false;
-        $sheetVectors = $vectorModel->getVectors();
-        if ($sheetVectors->count() > $this->getAvailableVectors()->count()) {
+        if ($vectorModel->getVectors()->count() > $this->getAvailableVectors()->count()) {
             throw new Exception('There is no available space for ' . get_class($vectorModel));
         }
-        foreach ($this->getAvailableVectors() as $availVector) {
-            $vectorModel->setAnchorPoint($availVector);
-            if ($this->canUseVectors($vectorModel->getVectors())) {
-                $this->assignVectors($sheetVectors);
-                $foundSpace = true;
-                break;
-            }
-            $sheetVectors = $vectorModel->getVectors();
+        $anchorPoint = $this->getAvailableVectors()->first(
+            fn (Vector $availVector) => $this->canUseVectors($vectorModel->setAnchorPoint($availVector)->getVectors())
+        );
+        if (is_null($anchorPoint)) {
+            $vectorModel->setAnchorPoint($anchorPoint);
+            throw new Exception('There is no available space to set anchor for ' . get_class($vectorModel));
         }
-        if (!$foundSpace) {
-            throw new Exception('There is no available space for ' . get_class($vectorModel));
-        }
-        return $vectorModel;
+        return $this->assignVectors($vectorModel->getVectors());
     }
 
     /**

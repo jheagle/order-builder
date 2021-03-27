@@ -4,6 +4,8 @@ namespace Tests\Unit\Vectors;
 
 use App\Vectors\Vector;
 use App\Vectors\VectorMatrix;
+use App\Vectors\VectorModel;
+use Exception;
 use Illuminate\Support\Collection;
 use OutOfBoundsException;
 use Tests\TestCase;
@@ -168,14 +170,81 @@ class VectorMatrixTest extends TestCase
 
     /**
      * Given an incoming VectorModel
-     * When
-     * Then
+     * When the vector model size is larger than the matrix available spaces
+     * Then and exception will be thrown.
      *
      * @covers ::assignAvailablePosition
      */
-    final public function testAssignAvailablePosition(): void
+    final public function testAssignAvailablePositionWhenTooBig(): void
     {
-        //TODO: Add at least four tests for this method, there error states, and one success
-        self::markTestIncomplete('This test needs to be written');
+        $matrix = (new VectorMatrix(2, 2, 2))->create();
+        $vectorModel = $this->makeVectorModelClass(['width' => 10, 'height' => 10]);
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('There is no available space for ' . get_class($vectorModel));
+        $matrix->assignAvailablePosition($vectorModel);
+    }
+
+    /**
+     * Given an incoming VectorModel
+     * When the vector model dimensions do not fit available matrix space
+     * Then and exception will be thrown.
+     *
+     * @covers ::assignAvailablePosition
+     */
+    final public function testAssignAvailablePositionWithNoSpace(): void
+    {
+        $matrix = (new VectorMatrix(2, 2, 1))->create();
+        $matrix->assignVectors(new Collection([
+            new Vector(1, 0, 0),
+            new Vector(1, 1, 0),
+        ]));
+        $vectorModel = $this->makeVectorModelClass(['width' => 2, 'height' => 1]);
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('There is no available space to set anchor for ' . get_class($vectorModel));
+        $matrix->assignAvailablePosition($vectorModel);
+    }
+
+    /**
+     * Given an incoming VectorModel
+     * When there is available space for the provided dimensions in the matrix
+     * Then the anchor point will be assigned to the model, and matrix occupied
+     *
+     * @covers ::assignAvailablePosition
+     *
+     * @throws Exception
+     */
+    final public function testAssignAvailablePositionWithSpaceFound(): void
+    {
+        $matrix = (new VectorMatrix(2, 2, 1))->create();
+        $matrix->assignVectors(new Collection([
+            new Vector(0, 0, 0),
+            new Vector(1, 0, 0),
+        ]));
+        self::assertCount(2, $matrix->getAvailableVectors());
+        $vectorModel = $this->makeVectorModelClass(['width' => 2, 'height' => 1]);
+        $matrix->assignAvailablePosition($vectorModel);
+        self::assertEquals(['x' => 0, 'y' => 1, 'z' => 0], $vectorModel->getAnchorPoint()->toArray());
+        self::assertCount(0, $matrix->getAvailableVectors());
+    }
+
+    /**
+     * Create an instance of a VectorModel subclass.
+     *
+     * @param array $attributes
+     *
+     * @return VectorModel
+     */
+    private function makeVectorModelClass(array $attributes = []): VectorModel
+    {
+        return new class($attributes) extends VectorModel {
+
+            final public function __construct(array $attributes = [])
+            {
+                parent::__construct();
+                foreach ($attributes as $name => $attribute) {
+                    $this->{$name} = $attribute;
+                }
+            }
+        };
     }
 }

@@ -52,7 +52,10 @@ class SetPrintItemPositionsTest extends TestCase
 
         $matrix = (new VectorMatrix($this->service::SHEET_WIDTH, $this->service::SHEET_HEIGHT))->create();
         $sheetItemCollection = $this->service->sortPrintSheetItems($sheetItemCollection)->map(
-            fn ($sheetItem) => $matrix->assignAvailablePosition($sheetItem)
+            fn (PrintSheetItem $sheetItem) => $matrix
+                ->assignAvailablePosition($sheetItem)
+                ->getVector(...$sheetItem->getAnchorPoint()->toArray())
+                ->getBelongsTo()
         );
 
         self::assertCount($expectedVectors->count(), $sheetItems);

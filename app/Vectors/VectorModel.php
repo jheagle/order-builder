@@ -9,7 +9,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 /**
- * Class VectorModel
+ * Abstract class VectorModel
  *
  * @package App\Vectors
  * @method static Builder|VectorModel newModelQuery()
@@ -17,7 +17,7 @@ use Illuminate\Support\Collection;
  * @method static Builder|VectorModel query()
  * @mixin Eloquent
  */
-class VectorModel extends Model
+abstract class VectorModel extends Model
 {
     protected ?Vector $anchorPoint = null;
     protected ?Collection $vectors = null;
@@ -75,12 +75,16 @@ class VectorModel extends Model
     /**
      * Apply new vector values onto this class
      *
-     * @param Vector $vector
+     * @param Vector|null $vector
      *
      * @return $this
      */
-    final public function setAnchorPoint(Vector $vector): self
+    final public function setAnchorPoint(?Vector $vector): self
     {
+        if (is_null($vector)){
+            $this->anchorPoint = null;
+            return $this;
+        }
         $xField = Arr::get($this->coordinates, 'x', 'x');
         $yField = Arr::get($this->coordinates, 'y', 'y');
         $zField = Arr::get($this->coordinates, 'z', 'z');
@@ -127,7 +131,7 @@ class VectorModel extends Model
             $this
         );
         if ($anchor->equals($columnEnd)) {
-            return $planarPoints->concat($this->getPointsLine($anchor, $columnEnd));
+            return $planarPoints->concat($this->getPointsLine($anchor, $stepper));
         }
         while (!$anchor->equals($columnEnd)) {
             $planarPoints = $planarPoints->concat($this->getPointsLine($anchor, $stepper));

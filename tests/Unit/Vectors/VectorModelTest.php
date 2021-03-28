@@ -281,7 +281,6 @@ class VectorModelTest extends TestCase
     /**
      * Sample sets for getPlanarPoints
      */
-    #[ArrayShape(['start and dimensions are equal return one point' => "array", 'start with 1x1 dimensions returns one point' => "array", '2x2 dimensions returns four points' => "array", '2x5 dimensions returns ten points' => "array", '5x2 dimensions returns ten points' => "array", '3x3 dimensions on y and z returns nine points' => "array"])]
     final public function planarPointsProvider(): array
     {
         return [
@@ -331,6 +330,14 @@ class VectorModelTest extends TestCase
                     [0, 2, 0], [0, 2, 1], [0, 2, 2],
                 ],
                 'axis' => ['y', 'z']
+            ],
+            '2x1 dimensions in single row returns line of points' => [
+                'start' => [0, 0, 0],
+                'dimensions' => [3, 1, 0],
+                'expected' => [
+                    [0, 0, 0], [1, 0, 0], [2, 0, 0],
+                ],
+                'axis' => ['x', 'y']
             ],
         ];
     }

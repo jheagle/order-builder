@@ -4,7 +4,6 @@ namespace App\Support\DataTransferObjects;
 
 use Illuminate\Support\Collection;
 use Spatie\DataTransferObject\DataTransferObject;
-use App\Support\DataTransferObjects\OrderItemsDto;
 
 /**
  * Build required fields for creating an Order
@@ -26,7 +25,7 @@ class OrderDto extends DataTransferObject
     /**
      * The collection of associated order items.
      *
-     * @var \Illuminate\Support\Collection|OrderItemDto[] $orderItems
+     * @var \Illuminate\Support\Collection $orderItems
      */
     public Collection $orderItems;
 

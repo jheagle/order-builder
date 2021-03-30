@@ -19,7 +19,7 @@ class OrderFactory extends Factory
      *
      * @return array
      */
-    public function definition()
+    final public function definition(): array
     {
         return [
             'order_number' => $this->faker->randomNumber(),
@@ -37,11 +37,11 @@ class OrderFactory extends Factory
      *
      * @return Factory
      */
-    public function unit()
+    final public function unit(): Factory
     {
         return $this->state(
-            fn () => [
-                'id' => mt_rand(1, 999),
+            fn() => [
+                'id' => random_int(1, 999),
             ]
         );
     }

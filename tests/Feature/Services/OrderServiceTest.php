@@ -31,7 +31,7 @@ class OrderServiceTest extends TestCase
      *
      * @return void
      */
-    protected function setUp(): void
+    final public function setUp(): void
     {
         parent::setUp();
 
@@ -47,7 +47,7 @@ class OrderServiceTest extends TestCase
      *
      * @covers ::buildOrder
      */
-    public function testCreateASingleItemOrder()
+    final public function testCreateASingleItemOrder(): void
     {
         $product = Product::find(3);
         $quantity = 1;
@@ -65,7 +65,7 @@ class OrderServiceTest extends TestCase
             'order_status' => Order::STATUS_PENDING,
             'total_price' => $quantity * $product->price,
         ]);
-        $this->assertCount(1, $order->orderItems);
+        self::assertCount(1, $order->orderItems);
     }
 
     /**
@@ -75,7 +75,7 @@ class OrderServiceTest extends TestCase
      *
      * @covers ::buildOrder
      */
-    public function testCreateAMultiItemOrder()
+    final public function testCreateAMultiItemOrder(): void
     {
         $productOne = Product::find(1);
         $productTwo = Product::find(2);
@@ -99,6 +99,6 @@ class OrderServiceTest extends TestCase
             'order_status' => Order::STATUS_PENDING,
             'total_price' => $total,
         ]);
-        $this->assertCount(2, $order->orderItems);
+        self::assertCount(2, $order->orderItems);
     }
 }

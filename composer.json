@@ -8,7 +8,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^7.3|^8.0",
+        "php": "^8.0",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
@@ -17,6 +17,9 @@
         "spatie/data-transfer-object": "^2.8"
     },
     "require-dev": {
+        "roave/security-advisories": "dev-latest",
+        "barryvdh/laravel-ide-helper": "^2.9",
+        "codedungeon/phpunit-result-printer": "^0.30.1",
         "facade/ignition": "^2.5",
         "fakerphp/faker": "^1.9.1",
         "laravel/sail": "^1.0.1",
@@ -58,6 +61,11 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
+        ],
+        "post-update-cmd": [
+            "Illuminate\\Foundation\\ComposerScripts::postUpdate",
+            "@php artisan ide-helper:generate",
+            "@php artisan ide-helper:meta"
         ]
     }
 }

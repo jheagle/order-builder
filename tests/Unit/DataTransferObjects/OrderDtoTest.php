@@ -24,7 +24,7 @@ class OrderDtoTest extends TestCase
      *
      * @covers ::fromArray
      */
-    public function testCreateOrderWithNoOrderItemsFails()
+    final public function testCreateOrderWithNoOrderItemsFails(): void
     {
         $this->expectException(TypeError::class);
         OrderDto::fromArray([

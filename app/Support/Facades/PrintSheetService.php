@@ -12,6 +12,10 @@ use App\Services\PrintSheetService as Service;
  *
  * @package App\Support\Facades
  *
+ * @const SHEET_WIDTH = 10
+ * @const SHEET_HEIGHT = 15
+ *
+ * @method static Model assignAvailablePosition(Model $sheetItem, VectorMatrix $matrix)
  * @method static PrintSheet buildPrintSheet(Order $order)
  * @method static Collection buildPrintSheetItems(PrintSheet $printSheet, OrderItem $item)
  * @method static Collection sortPrintSheetItems(Collection $sheetItems)

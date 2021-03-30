@@ -18,11 +18,11 @@ class OrderService
     /**
      * Take some incoming Order details and build an Order with Order Items
      *
-     * @param OrderDto $order
+     * @param OrderDto $orderDto
      *
      * @return Order
      */
-    public function buildOrder(OrderDto $orderDto): Order
+    final public function buildOrder(OrderDto $orderDto): Order
     {
         $order = new Order();
         $order->order_number = $orderDto->orderNumber ?? 0;

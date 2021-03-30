@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Services;
 
+use Exception;
 use Tests\TestCase;
 use App\Models\Product;
 use App\Models\OrderItem;
@@ -31,7 +32,7 @@ class PrintSheetServiceTest extends TestCase
      *
      * @return void
      */
-    protected function setUp(): void
+    final public function setUp(): void
     {
         parent::setUp();
 
@@ -46,15 +47,17 @@ class PrintSheetServiceTest extends TestCase
      * Then a new print sheet can be created with associated sheet items
      *
      * @covers ::buildPrintSheet
+     *
+     * @throws Exception
      */
-    public function testCreateASingleItemPrintSheet()
+    final public function testCreateASingleItemPrintSheet(): void
     {
         $product = Product::find(3);
         $quantity = 1;
-        $orderItem = OrderItem::factory()->create([
+        $orderItem = OrderItem::factory([
             'product_id' => $product->id,
             'quantity' => $quantity,
-        ]);
+        ])->create();
         $order = $orderItem->order;
 
         $printSheet = $this->service->buildPrintSheet($order);
@@ -64,6 +67,6 @@ class PrintSheetServiceTest extends TestCase
             'type' => PrintSheet::TYPE_ECOM,
         ]);
 
-        $this->assertCount(1, $printSheet->printSheetItems);
+        self::assertCount(1, $printSheet->printSheetItems);
     }
 }

@@ -11,3 +11,5 @@ docker-compose.override.yml
 npm-debug.log
 yarn-error.log
 .editorconfig
+/.phpstorm.meta.php
+/_ide_helper.php

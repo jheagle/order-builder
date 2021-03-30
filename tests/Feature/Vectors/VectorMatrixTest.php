@@ -1,7 +1,8 @@
 <?php
 
-namespace Tests\Feature\Services\PrintSheetService;
+namespace Tests\Feature\Vectors;
 
+use JetBrains\PhpStorm\ArrayShape;
 use Tests\TestCase;
 use App\Vectors\Vector;
 use App\Vectors\VectorMatrix;
@@ -12,16 +13,15 @@ use App\Services\PrintSheetService;
 /**
  * Test placing of a variety of sized print sheet items onto a sheet
  *
- * @package Tests\Feature\Services\PrintSheetService
+ * @package Tests\Feature\Vectors
  *
- * @group Unit
- * @group Services
- * @group PrintSheetService
- * @group SortItems
+ * @group Feature
+ * @group VectorMatrix
+ * @group AssignPosition
  *
- * @coversDefaultClass PrintSheetService
+ * @coversDefaultClass VectorMatrix
  */
-class SetPrintItemPositionsTest extends TestCase
+class VectorMatrixTest extends TestCase
 {
     public PrintSheetService $service;
 
@@ -44,21 +44,22 @@ class SetPrintItemPositionsTest extends TestCase
      *
      * @param array $sheetItems
      * @param array $expected
+     *
+     * @covers ::assignAvailablePosition
      */
     final public function testPositionSet(array $sheetItems, array $expected): void
     {
-        $sheetItemCollection = $this->makeSheetItems($sheetItems);
         $expectedVectors = $this->makeVectorCollection($expected);
 
         $matrix = (new VectorMatrix($this->service::SHEET_WIDTH, $this->service::SHEET_HEIGHT))->create();
-        $sheetItemCollection = $this->service->sortPrintSheetItems($sheetItemCollection)->map(
+        $sheetItemCollection = $this->service->sortPrintSheetItems($this->makeSheetItems($sheetItems))->map(
             fn(PrintSheetItem $sheetItem) => $matrix
                 ->assignAvailablePosition($sheetItem)
                 ->getVector(...$sheetItem->getAnchorPoint()->toArray())
                 ->getBelongsTo()
         );
 
-        self::assertCount($expectedVectors->count(), $sheetItems);
+        self::assertCount($expectedVectors->count(), $sheetItemCollection);
         self::assertTrue(
             $sheetItemCollection->every(
                 fn(PrintSheetItem $sheetItem) => $expectedVectors->contains(
@@ -73,6 +74,7 @@ class SetPrintItemPositionsTest extends TestCase
      *
      * @return int[]
      */
+    #[ArrayShape(['single 5x2 should be top left' => "\int[][][]", 'fit a variety of each product length to fill all space' => "\int[][][]", 'perfect fit of 2x5 should fill the entire matrix' => "\int[][][]", 'max 5x2 fit in matrix' => "\int[][][]", 'max 4x4 fit in matrix' => "\int[][][]", 'max 3x3 fit in matrix' => "\int[][][]", 'max 2x2 fit in matrix' => "\int[][][]", 'max 1x1 fit in matrix' => "\int[][][]"])]
     final public function sheetItemProvider(): array
     {
         return [
@@ -82,6 +84,36 @@ class SetPrintItemPositionsTest extends TestCase
                 ],
                 'expected' => [
                     [0, 0]
+                ]
+            ],
+            'fit a variety of each product length to fill all space' => [
+                'sheetItems' => [
+                    [5, 2, 1], [5, 2, 1],
+                    [5, 2, 1], [5, 2, 1],
+                    [5, 2, 1], [2, 5, 1], [2, 5, 1], [1, 1, 1],
+                    [1, 1, 1],
+                    [4, 4, 1], [1, 1, 1], [1, 1, 1],
+                    [1, 1, 1], [1, 1, 1],
+                    [1, 1, 1], [1, 1, 1],
+                    [4, 4, 1], [2, 2, 1],
+                    [3, 3, 1], [1, 1, 1],
+                    [1, 1, 1], [2, 2, 1],
+                    [1, 1, 1],
+                    [2, 2, 1], [2, 2, 1], [2, 2, 1], [2, 2, 1], [2, 2, 1],
+                ],
+                'expected' => [
+                    [0, 0], [5, 0],
+                    [0, 2], [5, 2],
+                    [0, 4], [5, 4], [7, 4], [9, 4],
+                    [9, 5],
+                    [0, 6], [4, 6], [9, 6],
+                    [4, 7], [9, 7],
+                    [4, 8], [9, 8],
+                    [4, 9], [8, 9],
+                    [0, 10], [3, 10],
+                    [3, 11], [8, 11],
+                    [3, 12],
+                    [0, 13], [2, 13], [4, 13], [6, 13], [8, 13],
                 ]
             ],
             'perfect fit of 2x5 should fill the entire matrix' => [

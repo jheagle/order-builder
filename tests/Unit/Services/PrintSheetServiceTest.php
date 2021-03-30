@@ -4,6 +4,7 @@ namespace Tests\Unit\Services;
 
 use App\Vectors\Vector;
 use Illuminate\Support\Collection;
+use JetBrains\PhpStorm\ArrayShape;
 use Tests\TestCase;
 use App\Models\Product;
 use App\Models\OrderItem;
@@ -50,17 +51,20 @@ class PrintSheetServiceTest extends TestCase
     {
         $product = Product::factory()->unit()->make();
         $orderItem = OrderItem::factory([
-            'product_id' => $product->id,
+            'product_id' => $product->getKey(),
             'quantity' => 1,
-        ])->unit()->make();
-        $orderItem->product = $product;
+        ])
+            ->unit()
+            ->make()
+            ->setRelation('product', $product);
         $printSheet = PrintSheet::factory()->unit()->make();
-        $width = Str::before($product->size, 'x');
-        $height = Str::after($product->size, 'x');
+        $size = $product->getAttribute('size');
+        $width = Str::before($size, 'x');
+        $height = Str::after($size, 'x');
         $printSheetItem = $this->service->buildPrintSheetItems($printSheet, $orderItem)->first();
 
-        self::assertEquals($printSheet->id, $printSheetItem->print_sheet_id);
-        self::assertEquals($orderItem->id, $printSheetItem->order_item_id);
+        self::assertEquals($printSheet->getKey(), $printSheetItem->print_sheet_id);
+        self::assertEquals($orderItem->getKey(), $printSheetItem->order_item_id);
         self::assertEquals(PrintSheetItem::STATUS_PASS, $printSheetItem->status);
         self::assertEquals($width, $printSheetItem->width);
         self::assertEquals($height, $printSheetItem->height);
@@ -78,18 +82,21 @@ class PrintSheetServiceTest extends TestCase
         $product = Product::factory()->unit()->make();
         $quantity = 5;
         $orderItem = OrderItem::factory([
-            'product_id' => $product->id,
+            'product_id' => $product->getKey(),
             'quantity' => $quantity,
-        ])->unit()->make();
-        $orderItem->product = $product;
+        ])
+            ->unit()
+            ->make()
+            ->setRelation('product', $product);
         $printSheet = PrintSheet::factory()->unit()->make();
         $printSheetItems = $this->service->buildPrintSheetItems($printSheet, $orderItem);
 
         self::assertCount($quantity, $printSheetItems);
 
-        $printSheetItems->each(function (PrintSheetItem $printSheetItem) use ($product) {
-            $width = Str::before($product->size, 'x');
-            $height = Str::after($product->size, 'x');
+        $size = $product->getAttribute('size');
+        $printSheetItems->each(function (PrintSheetItem $printSheetItem) use ($size) {
+            $width = Str::before($size, 'x');
+            $height = Str::after($size, 'x');
             self::assertEquals(PrintSheetItem::STATUS_PASS, $printSheetItem->status);
             self::assertEquals($width, $printSheetItem->width);
             self::assertEquals($height, $printSheetItem->height);
@@ -125,35 +132,18 @@ class PrintSheetServiceTest extends TestCase
      *
      * @return int[]
      */
+    #[ArrayShape(['single 5x2 should be top left' => "\int[][][]", 'variable amounts of each product' => "\int[][][]"])]
     final public function sheetItemProvider(): array
     {
         return [
             'single 5x2 should be top left' => [
                 'sheetItems' => [
-                    [
-                        'width' => 1,
-                        'height' => 1
-                    ],
-                    [
-                        'width' => 2,
-                        'height' => 2
-                    ],
-                    [
-                        'width' => 2,
-                        'height' => 5
-                    ],
-                    [
-                        'width' => 3,
-                        'height' => 3
-                    ],
-                    [
-                        'width' => 5,
-                        'height' => 2
-                    ],
-                    [
-                        'width' => 4,
-                        'height' => 4
-                    ],
+                    [1, 1],
+                    [2, 2],
+                    [2, 5],
+                    [3, 3],
+                    [5, 2],
+                    [4, 4],
                 ],
                 'expected' => [
                     [5, 2, 1],
@@ -162,6 +152,31 @@ class PrintSheetServiceTest extends TestCase
                     [3, 3, 1],
                     [2, 2, 1],
                     [1, 1, 1]
+                ]
+            ],
+            'variable amounts of each product' => [
+                'sheetItems' => [
+                    [5, 2],
+                    [2, 2],
+                    [3, 3],
+                    [2, 5],
+                    [4, 4],
+                    [5, 2],
+                    [3, 3],
+                    [2, 2],
+                    [5, 2],
+                    [1, 1],
+                    [2, 5],
+                    [1, 1],
+                    [4, 4],
+                ],
+                'expected' => [
+                    [5, 2, 1], [5, 2, 1], [5, 2, 1],
+                    [2, 5, 1], [2, 5, 1],
+                    [4, 4, 1], [4, 4, 1],
+                    [3, 3, 1], [3, 3, 1],
+                    [2, 2, 1], [2, 2, 1],
+                    [1, 1, 1], [1, 1, 1],
                 ]
             ],
         ];
@@ -181,8 +196,9 @@ class PrintSheetServiceTest extends TestCase
                 return PrintSheetItem::factory([
                     'x_pos' => 0,
                     'y_pos' => 0,
-                    'width' => $dimensions['width'],
-                    'height' => $dimensions['height']
+                    'width' => $dimensions[0],
+                    'height' => $dimensions[1],
+                    'size' => "{$dimensions[0]}x{$dimensions[1]}"
                 ])->unit()->make();
             }, $itemDimensions)
         );

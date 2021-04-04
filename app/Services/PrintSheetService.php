@@ -38,16 +38,15 @@ class PrintSheetService
         $printSheet->save();
 
         $printSheetItems = $order->orderItems->reduce(
-            fn(Collection $sheetItems, OrderItem $item) => $sheetItems->concat($this->buildPrintSheetItems($printSheet, $item)),
+            fn(Collection $sheetItems, OrderItem $item) => $sheetItems->concat($this->buildPrintSheetItems($item)),
             new Collection()
         );
 
-        $matrix = (new VectorMatrix(self::SHEET_WIDTH, self::SHEET_HEIGHT))->create();
-        $this->sortPrintSheetItems($printSheetItems)
-            ->each(function (PrintSheetItem $sheetItem) use ($matrix) {
-                $matrix->assignAvailablePosition($sheetItem);
-                $sheetItem->save();
-            });
+        (new VectorMatrix(self::SHEET_WIDTH, self::SHEET_HEIGHT))
+            ->create()
+            ->assignAvailablePositions($printSheetItems);
+
+        $printSheet->printSheetItems()->saveMany($printSheetItems);
 
         return $printSheet;
     }
@@ -55,17 +54,15 @@ class PrintSheetService
     /**
      * Build Sheet Items for a given Order Item
      *
-     * @param PrintSheet $printSheet
      * @param OrderItem $item
      *
      * @return Collection
      */
-    final public function buildPrintSheetItems(PrintSheet $printSheet, OrderItem $item): Collection
+    final public function buildPrintSheetItems(OrderItem $item): Collection
     {
         $sheetItems = new Collection();
         for ($i = 0; $i < $item->quantity; ++$i) {
             $printSheetItem = new PrintSheetItem();
-            $printSheetItem->print_sheet_id = $printSheet->id;
             $printSheetItem->product_id = $item->product_id;
             $printSheetItem->order_item_id = $item->id;
             $printSheetItem->status = PrintSheetItem::STATUS_PASS;
@@ -80,23 +77,5 @@ class PrintSheetService
             $sheetItems->push($printSheetItem);
         }
         return $sheetItems;
-    }
-
-    /**
-     * Take all of the Print Sheet Items and sort them from largest perimeter to smallest.
-     * Equal perimeter place largest width first.
-     *
-     * @param Collection $sheetItems
-     *
-     * @return Collection
-     */
-    final public function sortPrintSheetItems(Collection $sheetItems): Collection
-    {
-        return $sheetItems->sort(function (PrintSheetItem $a, PrintSheetItem $b) {
-            $highestWidth = $a->width > $b->width ? $a : $b;
-            $highestHeight = $a->height > $b->height ? $a : $b;
-            $largestSide = $highestHeight->height > $highestWidth->width ? $highestHeight : $highestWidth;
-            return $largestSide === $a ? -1 : 1;
-        })->values();
     }
 }

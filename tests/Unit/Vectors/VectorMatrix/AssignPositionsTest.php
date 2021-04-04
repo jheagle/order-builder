@@ -1,19 +1,19 @@
 <?php
 
-namespace Tests\Feature\Vectors;
+namespace Tests\Unit\Vectors\VectorMatrix;
 
-use JetBrains\PhpStorm\ArrayShape;
+use App\Vectors\VectorModel;
+use Exception;
 use Tests\TestCase;
 use App\Vectors\Vector;
 use App\Vectors\VectorMatrix;
-use App\Models\PrintSheetItem;
 use Illuminate\Support\Collection;
 use App\Services\PrintSheetService;
 
 /**
  * Test placing of a variety of sized print sheet items onto a sheet
  *
- * @package Tests\Feature\Vectors
+ * @package Tests\Unit\Vectors\VectorMatrix
  *
  * @group Feature
  * @group VectorMatrix
@@ -21,7 +21,7 @@ use App\Services\PrintSheetService;
  *
  * @coversDefaultClass VectorMatrix
  */
-class VectorMatrixTest extends TestCase
+class AssignPositionsTest extends TestCase
 {
     public PrintSheetService $service;
 
@@ -38,31 +38,30 @@ class VectorMatrixTest extends TestCase
     }
 
     /**
-     * Test
+     * Test various collections of vectors fit as expected.
      *
      * @dataProvider sheetItemProvider
      *
-     * @param array $sheetItems
+     * @param array $vectorItems
      * @param array $expected
      *
-     * @covers ::assignAvailablePosition
+     * @covers ::assignAvailablePositions
+     *
+     * @throws Exception
      */
-    final public function testPositionSet(array $sheetItems, array $expected): void
+    final public function testPositionSet(array $vectorItems, array $expected): void
     {
         $expectedVectors = $this->makeVectorCollection($expected);
+        $sheetItemCollection = $this->makeVectorItems($vectorItems);
 
-        $matrix = (new VectorMatrix($this->service::SHEET_WIDTH, $this->service::SHEET_HEIGHT))->create();
-        $sheetItemCollection = $this->service->sortPrintSheetItems($this->makeSheetItems($sheetItems))->map(
-            fn(PrintSheetItem $sheetItem) => $matrix
-                ->assignAvailablePosition($sheetItem)
-                ->getVector(...$sheetItem->getAnchorPoint()->toArray())
-                ->getBelongsTo()
-        );
+        (new VectorMatrix($this->service::SHEET_WIDTH, $this->service::SHEET_HEIGHT))
+            ->create()
+            ->assignAvailablePositions($sheetItemCollection);
 
         self::assertCount($expectedVectors->count(), $sheetItemCollection);
         self::assertTrue(
             $sheetItemCollection->every(
-                fn(PrintSheetItem $sheetItem) => $expectedVectors->contains(
+                fn(VectorModel $sheetItem) => $expectedVectors->contains(
                     fn(Vector $vector) => $vector->equals($sheetItem->getAnchorPoint())
                 )
             )
@@ -74,50 +73,113 @@ class VectorMatrixTest extends TestCase
      *
      * @return int[]
      */
-    #[ArrayShape(['single 5x2 should be top left' => "\int[][][]", 'fit a variety of each product length to fill all space' => "\int[][][]", 'perfect fit of 2x5 should fill the entire matrix' => "\int[][][]", 'max 5x2 fit in matrix' => "\int[][][]", 'max 4x4 fit in matrix' => "\int[][][]", 'max 3x3 fit in matrix' => "\int[][][]", 'max 2x2 fit in matrix' => "\int[][][]", 'max 1x1 fit in matrix' => "\int[][][]"])]
     final public function sheetItemProvider(): array
     {
         return [
             'single 5x2 should be top left' => [
-                'sheetItems' => [
+                'vectorItems' => [
                     [5, 2]
                 ],
                 'expected' => [
                     [0, 0]
                 ]
             ],
-            'fit a variety of each product length to fill all space' => [
-                'sheetItems' => [
-                    [5, 2, 1], [5, 2, 1],
-                    [5, 2, 1], [5, 2, 1],
-                    [5, 2, 1], [2, 5, 1], [2, 5, 1], [1, 1, 1],
-                    [1, 1, 1],
-                    [4, 4, 1], [1, 1, 1], [1, 1, 1],
-                    [1, 1, 1], [1, 1, 1],
-                    [1, 1, 1], [1, 1, 1],
-                    [4, 4, 1], [2, 2, 1],
-                    [3, 3, 1], [1, 1, 1],
-                    [1, 1, 1], [2, 2, 1],
-                    [1, 1, 1],
-                    [2, 2, 1], [2, 2, 1], [2, 2, 1], [2, 2, 1], [2, 2, 1],
+            'single 2x5 should be top left' => [
+                'vectorItems' => [
+                    [2, 5]
+                ],
+                'expected' => [
+                    [0, 0]
+                ]
+            ],
+            'single 4x4 should be top left' => [
+                'vectorItems' => [
+                    [4, 4]
+                ],
+                'expected' => [
+                    [0, 0]
+                ]
+            ],
+            'single 3x3 should be top left' => [
+                'vectorItems' => [
+                    [3, 3]
+                ],
+                'expected' => [
+                    [0, 0]
+                ]
+            ],
+            'single 2x2 should be top left' => [
+                'vectorItems' => [
+                    [2, 2]
+                ],
+                'expected' => [
+                    [0, 0]
+                ]
+            ],
+            'single 1x1 should be top left' => [
+                'vectorItems' => [
+                    [1, 1]
+                ],
+                'expected' => [
+                    [0, 0]
+                ]
+            ],
+            'use one of each to fill the page' => [
+                'vectorItems' => [
+                    [5, 2],
+                    [2, 5],
+                    [4, 4],
+                    [3, 3],
+                    [2, 2],
+                    [1, 1],
+                ],
+                'expected' => [
+                    [0, 0],
+                    [5, 0],
+                    [0, 2],
+                    [7, 0],
+                    [7, 3],
+                    [4, 2],
+                ]
+            ],
+            'use two of each to fill the page' => [
+                'vectorItems' => [
+                    [5, 2], [5, 2],
+                    [2, 5], [2, 5],
+                    [4, 4], [4, 4],
+                    [3, 3], [3, 3],
+                    [2, 2], [2, 2],
+                    [1, 1], [1, 1],
                 ],
                 'expected' => [
                     [0, 0], [5, 0],
-                    [0, 2], [5, 2],
-                    [0, 4], [5, 4], [7, 4], [9, 4],
-                    [9, 5],
-                    [0, 6], [4, 6], [9, 6],
-                    [4, 7], [9, 7],
-                    [4, 8], [9, 8],
-                    [4, 9], [8, 9],
-                    [0, 10], [3, 10],
-                    [3, 11], [8, 11],
-                    [3, 12],
-                    [0, 13], [2, 13], [4, 13], [6, 13], [8, 13],
+                    [0, 2], [2, 2],
+                    [4, 2], [4, 6],
+                    [0, 7], [0, 10],
+                    [8, 2], [8, 4],
+                    [8, 6], [9, 6],
+                ]
+            ],
+            'use three of each to fill the page' => [
+                'vectorItems' => [
+                    [5, 2], [5, 2], [5, 2],
+                    [2, 5], [2, 5], [2, 5],
+                    [4, 4], [4, 4], [4, 4],
+                    [3, 3], [3, 3], [3, 3],
+                    [2, 2], // [2, 2], [2, 2],
+                    [1, 1], [1, 1], [1, 1],
+                ],
+                'expected' => [
+                    [0, 0], [5, 0], [0, 2],
+                    [5, 2], [7, 2], [0, 4],
+                    [2, 7], [6, 7], [0, 11],
+                    [2, 4], [4, 11], [7, 11],
+                    [0, 9], // There are two [2, 2] that cannot fit, unused area of 8 units
+                    [9, 2], [9, 3], [9, 4],
                 ]
             ],
             'perfect fit of 2x5 should fill the entire matrix' => [
-                'sheetItems' => [
+                'vectorItems' => [
                     [2, 5], [2, 5], [2, 5], [2, 5], [2, 5],
                     [2, 5], [2, 5], [2, 5], [2, 5], [2, 5],
                     [2, 5], [2, 5], [2, 5], [2, 5], [2, 5],
@@ -129,7 +191,7 @@ class VectorMatrixTest extends TestCase
                 ]
             ],
             'max 5x2 fit in matrix' => [
-                'sheetItems' => [
+                'vectorItems' => [
                     [5, 2], [5, 2],
                     [5, 2], [5, 2],
                     [5, 2], [5, 2],
@@ -149,7 +211,7 @@ class VectorMatrixTest extends TestCase
                 ]
             ],
             'max 4x4 fit in matrix' => [
-                'sheetItems' => [
+                'vectorItems' => [
                     [4, 4], [4, 4],
                     [4, 4], [4, 4],
                     [4, 4], [4, 4],
@@ -161,7 +223,7 @@ class VectorMatrixTest extends TestCase
                 ]
             ],
             'max 3x3 fit in matrix' => [
-                'sheetItems' => [
+                'vectorItems' => [
                     [3, 3], [3, 3], [3, 3],
                     [3, 3], [3, 3], [3, 3],
                     [3, 3], [3, 3], [3, 3],
@@ -177,7 +239,7 @@ class VectorMatrixTest extends TestCase
                 ]
             ],
             'max 2x2 fit in matrix' => [
-                'sheetItems' => [
+                'vectorItems' => [
                     [2, 2], [2, 2], [2, 2], [2, 2], [2, 2],
                     [2, 2], [2, 2], [2, 2], [2, 2], [2, 2],
                     [2, 2], [2, 2], [2, 2], [2, 2], [2, 2],
@@ -197,7 +259,7 @@ class VectorMatrixTest extends TestCase
                 ]
             ],
             'max 1x1 fit in matrix' => [
-                'sheetItems' => [
+                'vectorItems' => [
                     [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1],
                     [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1],
                     [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1],
@@ -242,19 +304,26 @@ class VectorMatrixTest extends TestCase
      *
      * @return Collection
      */
-    private function makeSheetItems(array $itemDimensions): Collection
+    private function makeVectorItems(array $itemDimensions): Collection
     {
-        return new Collection(
-            array_map(static function (array $dimensions): PrintSheetItem {
-                return PrintSheetItem::factory([
-                    'x_pos' => 0,
-                    'y_pos' => 0,
-                    'width' => $dimensions[0],
-                    'height' => $dimensions[1],
-                    'size' => "{$dimensions[0]}x{$dimensions[1]}"
-                ])->unit()->make();
-            }, $itemDimensions)
-        );
+        return Collection::make(array_map(
+            function (array $dimensions): VectorModel {
+                return new class(...$dimensions) extends VectorModel {
+                    public int $x = 0;
+                    public int $y = 0;
+                    public int $width = 0;
+                    public int $height = 0;
+
+                    public function __construct(int $width = 0, int $height = 0)
+                    {
+                        parent::__construct();
+                        $this->width = $width;
+                        $this->height = $height;
+                    }
+                };
+            },
+            $itemDimensions
+        ));
     }
 
     /**
@@ -266,7 +335,7 @@ class VectorMatrixTest extends TestCase
      */
     private function makeVectorCollection(array $vectorCoordinates): Collection
     {
-        return new Collection(
+        return Collection::make(
             array_map(static function (array $coordinates): Vector {
                 return new Vector(...$coordinates);
             }, $vectorCoordinates)

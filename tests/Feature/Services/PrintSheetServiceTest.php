@@ -67,6 +67,59 @@ class PrintSheetServiceTest extends TestCase
             'type' => PrintSheet::TYPE_ECOM,
         ]);
 
-        self::assertCount(1, $printSheet->printSheetItems);
+        self::assertCount($quantity, $printSheet->printSheetItems);
+    }
+
+    /**
+     * Given a print sheet request
+     * When a valid Order is provided
+     * Then a new print sheet can be created with associated sheet items
+     *
+     * @covers ::buildPrintSheet
+     *
+     * @throws Exception
+     */
+    final public function testCreateMultipleItemPrintSheet(): void
+    {
+        $product = Product::find(5);
+        $quantity = 4;
+        $orderItem = OrderItem::factory([
+            'product_id' => $product->id,
+            'quantity' => $quantity,
+        ])->create();
+        $order = $orderItem->order;
+
+        $printSheet = $this->service->buildPrintSheet($order);
+
+        $this->assertDatabaseHas('print_sheets', [
+            'id' => 1,
+            'type' => PrintSheet::TYPE_ECOM,
+        ]);
+
+        self::assertCount($quantity, $printSheet->printSheetItems);
+        $this->assertDatabaseHas('print_sheet_items', [
+            'id' => 1,
+            'print_sheet_id' => 1,
+            'x_pos' => 0,
+            'y_pos' => 0,
+        ]);
+        $this->assertDatabaseHas('print_sheet_items', [
+            'id' => 2,
+            'print_sheet_id' => 1,
+            'x_pos' => 5,
+            'y_pos' => 0,
+        ]);
+        $this->assertDatabaseHas('print_sheet_items', [
+            'id' => 3,
+            'print_sheet_id' => 1,
+            'x_pos' => 0,
+            'y_pos' => 2,
+        ]);
+        $this->assertDatabaseHas('print_sheet_items', [
+            'id' => 4,
+            'print_sheet_id' => 1,
+            'x_pos' => 5,
+            'y_pos' => 2,
+        ]);
     }
 }

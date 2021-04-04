@@ -55,25 +55,18 @@ class VectorMatrix extends Collection
     /**
      * Assign next available space to the Print Sheet Item
      *
-     * @param VectorModel $vectorModel
+     * @param Collection $vectorItems
      *
      * @return self
      *
      * @throws Exception
      */
-    final public function assignAvailablePosition(VectorModel $vectorModel): self
+    final public function assignAvailablePositions(Collection $vectorItems): self
     {
-        if ($vectorModel->getVectors()->count() > $this->getAvailableVectors()->count()) {
-            throw new Exception('There is no available space for ' . get_class($vectorModel));
-        }
-        $anchorPoint = $this->getAvailableVectors()->first(
-            fn (Vector $availVector) => $this->canUseVectors($vectorModel->setAnchorPoint($availVector)->getVectors())
+        $this->sortVectorItems($vectorItems)->each(
+            fn (VectorModel $vectorItem) => $this->assignAvailablePosition($vectorItem)
         );
-        if (is_null($anchorPoint)) {
-            $vectorModel->setAnchorPoint($anchorPoint);
-            throw new Exception('There is no available space to set anchor for ' . get_class($vectorModel));
-        }
-        return $this->assignVectors($vectorModel->getVectors());
+        return $this;
     }
 
     /**
@@ -228,6 +221,53 @@ class VectorMatrix extends Collection
         }
         $this->get($z)->get($y)->get($x)->put($x, new Vector($x, $y, $z, $this));
         return $this;
+    }
+
+    /**
+     * Assign next available space to the Print Sheet Item
+     *
+     * @param VectorModel $vectorModel
+     *
+     * @return self
+     *
+     * @throws Exception
+     */
+    private function assignAvailablePosition(VectorModel $vectorModel): self
+    {
+        if ($vectorModel->getVectors()->count() > $this->getAvailableVectors()->count()) {
+            throw new Exception('There is no available space for ' . get_class($vectorModel));
+        }
+        $anchorPoint = $this->getAvailableVectors()->first(
+            fn (Vector $availVector) => $this->canUseVectors($vectorModel->setAnchorPoint($availVector)->getVectors())
+        );
+        if (is_null($anchorPoint)) {
+            $vectorModel->setAnchorPoint($anchorPoint);
+            throw new Exception('There is no available space to set anchor for ' . get_class($vectorModel));
+        }
+        return $this->assignVectors($vectorModel->getVectors());
+    }
+
+    /**
+     * Take all of the Vector Model Items and sort them from largest perimeter to smallest.
+     * Equal perimeter place largest width first.
+     *
+     * @param Collection $vectorItems
+     *
+     * @return Collection
+     */
+    private function sortVectorItems(Collection $vectorItems): Collection
+    {
+        return $vectorItems->sort(function (VectorModel $a, VectorModel $b) {
+            if ($a->getDimensions()->equals($b->getDimensions())){
+                return 0;
+            }
+            $highestWidth = $a->getDimensions()->x > $b->getDimensions()->x ? $a : $b;
+            $highestHeight = $a->getDimensions()->y > $b->getDimensions()->y ? $a : $b;
+            $largestSide = $highestHeight->getDimensions()->y > $highestWidth->getDimensions()->x
+                ? $highestHeight
+                : $highestWidth;
+            return $largestSide === $a ? -1 : 1;
+        })->values();
     }
 
     /**

@@ -104,7 +104,7 @@ class VectorMatrixTest extends TestCase
         $two = new Vector(3, 1, 6, 'assigned value two');
         $three = new Vector(7, 15, 3, 'assigned value three');
         $four = new Vector(10, 5, 9, 'assigned value four');
-        $vectors = new Collection([$one, $two, $three, $four]);
+        $vectors = Collection::make([$one, $two, $three, $four]);
         $matrix->assignVectors($vectors);
         self::assertEquals($one->getBelongsTo(), $matrix->getVector(...$one->toArray())->getBelongsTo());
         self::assertEquals($two->getBelongsTo(), $matrix->getVector(...$two->toArray())->getBelongsTo());
@@ -136,7 +136,7 @@ class VectorMatrixTest extends TestCase
     {
         $matrix = (new VectorMatrix(3, 3, 3))->create();
         self::assertCount(27, $matrix->getAvailableVectors());
-        $matrix->assignVectors(new Collection([
+        $matrix->assignVectors(Collection::make([
             new Vector(0, 1, 2),
             new Vector(2, 1, 0),
         ]));
@@ -152,11 +152,11 @@ class VectorMatrixTest extends TestCase
      */
     final public function testCanUseVectors(): void
     {
-        $badVectors = new Collection([
+        $badVectors = Collection::make([
             new Vector(5, 1, 2),
             new Vector(2, -1, 0),
         ]);
-        $assignVectors = new Collection([
+        $assignVectors = Collection::make([
             new Vector(0, 1, 2),
             new Vector(2, 1, 0),
         ]);
@@ -173,15 +173,15 @@ class VectorMatrixTest extends TestCase
      * When the vector model size is larger than the matrix available spaces
      * Then and exception will be thrown.
      *
-     * @covers ::assignAvailablePosition
+     * @covers ::assignAvailablePositions
      */
-    final public function testAssignAvailablePositionWhenTooBig(): void
+    final public function testAssignAvailablePositionsWhenTooBig(): void
     {
         $matrix = (new VectorMatrix(2, 2, 2))->create();
         $vectorModel = $this->makeVectorModelClass(['width' => 10, 'height' => 10]);
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('There is no available space for ' . get_class($vectorModel));
-        $matrix->assignAvailablePosition($vectorModel);
+        $matrix->assignAvailablePositions(Collection::make([$vectorModel]));
     }
 
     /**
@@ -189,19 +189,19 @@ class VectorMatrixTest extends TestCase
      * When the vector model dimensions do not fit available matrix space
      * Then and exception will be thrown.
      *
-     * @covers ::assignAvailablePosition
+     * @covers ::assignAvailablePositions
      */
     final public function testAssignAvailablePositionWithNoSpace(): void
     {
         $matrix = (new VectorMatrix(2, 2, 1))->create();
-        $matrix->assignVectors(new Collection([
+        $matrix->assignVectors(Collection::make([
             new Vector(1, 0, 0),
             new Vector(1, 1, 0),
         ]));
         $vectorModel = $this->makeVectorModelClass(['width' => 2, 'height' => 1]);
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('There is no available space to set anchor for ' . get_class($vectorModel));
-        $matrix->assignAvailablePosition($vectorModel);
+        $matrix->assignAvailablePositions(Collection::make([$vectorModel]));
     }
 
     /**
@@ -209,20 +209,20 @@ class VectorMatrixTest extends TestCase
      * When there is available space for the provided dimensions in the matrix
      * Then the anchor point will be assigned to the model, and matrix occupied
      *
-     * @covers ::assignAvailablePosition
+     * @covers ::assignAvailablePositions
      *
      * @throws Exception
      */
-    final public function testAssignAvailablePositionWithSpaceFound(): void
+    final public function testAssignAvailablePositionsWithSpaceFound(): void
     {
         $matrix = (new VectorMatrix(2, 2, 1))->create();
-        $matrix->assignVectors(new Collection([
+        $matrix->assignVectors(Collection::make([
             new Vector(0, 0, 0),
             new Vector(1, 0, 0),
         ]));
         self::assertCount(2, $matrix->getAvailableVectors());
         $vectorModel = $this->makeVectorModelClass(['width' => 2, 'height' => 1]);
-        $matrix->assignAvailablePosition($vectorModel);
+        $matrix->assignAvailablePositions(Collection::make([$vectorModel]));
         self::assertEquals(['x' => 0, 'y' => 1, 'z' => 0], $vectorModel->getAnchorPoint()->toArray());
         self::assertCount(0, $matrix->getAvailableVectors());
     }

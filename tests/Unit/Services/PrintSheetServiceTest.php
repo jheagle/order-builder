@@ -2,13 +2,10 @@
 
 namespace Tests\Unit\Services;
 
-use App\Vectors\Vector;
-use Illuminate\Support\Collection;
 use JetBrains\PhpStorm\ArrayShape;
 use Tests\TestCase;
 use App\Models\Product;
 use App\Models\OrderItem;
-use App\Models\PrintSheet;
 use Illuminate\Support\Str;
 use App\Models\PrintSheetItem;
 use App\Services\PrintSheetService;
@@ -57,13 +54,11 @@ class PrintSheetServiceTest extends TestCase
             ->unit()
             ->make()
             ->setRelation('product', $product);
-        $printSheet = PrintSheet::factory()->unit()->make();
         $size = $product->getAttribute('size');
         $width = Str::before($size, 'x');
         $height = Str::after($size, 'x');
-        $printSheetItem = $this->service->buildPrintSheetItems($printSheet, $orderItem)->first();
+        $printSheetItem = $this->service->buildPrintSheetItems($orderItem)->first();
 
-        self::assertEquals($printSheet->getKey(), $printSheetItem->print_sheet_id);
         self::assertEquals($orderItem->getKey(), $printSheetItem->order_item_id);
         self::assertEquals(PrintSheetItem::STATUS_PASS, $printSheetItem->status);
         self::assertEquals($width, $printSheetItem->width);
@@ -88,8 +83,7 @@ class PrintSheetServiceTest extends TestCase
             ->unit()
             ->make()
             ->setRelation('product', $product);
-        $printSheet = PrintSheet::factory()->unit()->make();
-        $printSheetItems = $this->service->buildPrintSheetItems($printSheet, $orderItem);
+        $printSheetItems = $this->service->buildPrintSheetItems($orderItem);
 
         self::assertCount($quantity, $printSheetItems);
 
@@ -101,30 +95,6 @@ class PrintSheetServiceTest extends TestCase
             self::assertEquals($width, $printSheetItem->width);
             self::assertEquals($height, $printSheetItem->height);
         });
-    }
-
-    /**
-     * Given a collection of vectors
-     * When these are passed to sortPrintSheetItems
-     * Then items with largest side, prioritizing width, with come first.
-     *
-     * @dataProvider sheetItemProvider
-     *
-     * @param array $sheetItems
-     * @param array $expected
-     *
-     * @covers ::sortPrintSheetItems
-     */
-    final public function testPositionSet(array $sheetItems, array $expected): void
-    {
-        $sheetItemCollection = $this->makeSheetItems($sheetItems);
-        $expectedVectors = $this->makeVectorCollection($expected);
-
-        $sheetItemCollection = $this->service->sortPrintSheetItems($sheetItemCollection);
-
-        foreach ($sheetItemCollection as $i => $sheetItem) {
-            self::assertTrue($expectedVectors[$i]->equals($sheetItem->getDimensions()));
-        }
     }
 
     /**
@@ -180,43 +150,5 @@ class PrintSheetServiceTest extends TestCase
                 ]
             ],
         ];
-    }
-
-    /**
-     * Helper for converting array to Sheet Items
-     *
-     * @param array $itemDimensions
-     *
-     * @return Collection
-     */
-    private function makeSheetItems(array $itemDimensions): Collection
-    {
-        return new Collection(
-            array_map(static function (array $dimensions): PrintSheetItem {
-                return PrintSheetItem::factory([
-                    'x_pos' => 0,
-                    'y_pos' => 0,
-                    'width' => $dimensions[0],
-                    'height' => $dimensions[1],
-                    'size' => "{$dimensions[0]}x{$dimensions[1]}"
-                ])->unit()->make();
-            }, $itemDimensions)
-        );
-    }
-
-    /**
-     * Helper for converting arrays to Vectors
-     *
-     * @param array $vectorCoordinates
-     *
-     * @return Collection
-     */
-    private function makeVectorCollection(array $vectorCoordinates): Collection
-    {
-        return new Collection(
-            array_map(static function (array $coordinates): Vector {
-                return new Vector(...$coordinates);
-            }, $vectorCoordinates)
-        );
     }
 }

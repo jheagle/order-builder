@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Services;
+namespace Tests\Integration\Services;
 
 use Tests\TestCase;
 use App\Models\Order;
@@ -12,9 +12,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 /**
  * Test service resources used for building orders
  *
- * @package Tests\Feature\Services
+ * @package Tests\Integration\Services
  *
- * @group Feature
+ * @group Integration
  * @group Services
  * @group OrderService
  *

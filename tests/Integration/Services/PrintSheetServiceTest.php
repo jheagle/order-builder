@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Services;
+namespace Tests\Integration\Services;
 
 use Exception;
 use Tests\TestCase;
@@ -13,9 +13,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 /**
  * Test service resources used for building print sheets
  *
- * @package Tests\Feature\Services
+ * @package Tests\Integration\Services
  *
- * @group Feature
+ * @group Integration
  * @group Services
  * @group PrintSheetService
  *

@@ -4,6 +4,7 @@ namespace App\Vectors;
 
 use Exception;
 use Illuminate\Support\Collection;
+use JetBrains\PhpStorm\Pure;
 use OutOfBoundsException;
 
 /**
@@ -31,12 +32,6 @@ class VectorMatrix extends Collection
 
     public int $depth = 0;
 
-    private int $x = 0;
-
-    private int $y = 0;
-
-    private int $z = 0;
-
     /**
      * VectorMatrix constructor.
      *
@@ -53,6 +48,19 @@ class VectorMatrix extends Collection
     }
 
     /**
+     * Check if the given dimensions will fit within the remaining available space.
+     *
+     * @param array $dimensions
+     *
+     * @return bool
+     */
+    private function fitsAvailableSpace(array $dimensions): bool
+    {
+        $groups = $this->getContiguousAvailableVectors();
+        // TODO: For each group get the shortest dimensions and build a matrix, then check canFitDimensions, return on first positive, or return false
+    }
+
+    /**
      * Assign next available space to the Print Sheet Item
      *
      * @param Collection $vectorItems
@@ -64,7 +72,7 @@ class VectorMatrix extends Collection
     final public function assignAvailablePositions(Collection $vectorItems): self
     {
         $this->sortVectorItems($vectorItems)->each(
-            fn (VectorModel $vectorItem) => $this->assignAvailablePosition($vectorItem)
+            fn(VectorModel $vectorItem) => $this->assignAvailablePosition($vectorItem)
         );
         return $this;
     }
@@ -98,6 +106,28 @@ class VectorMatrix extends Collection
     {
         $vectors->each([$this, 'assignVector']);
         return $this;
+    }
+
+    /**
+     * Check if given dimensions will fit into this matrix.
+     *
+     * @param array $dimensions
+     *
+     * @return bool
+     */
+    private function canFitDimensions(array $dimensions): bool
+    {
+        $matrixArea = self::WIDTH * self::HEIGHT * self::DEPTH;
+        $widthDivisor = floor(self::WIDTH / $dimensions['width']);
+        $heightDivisor = floor(self::HEIGHT / $dimensions['height']);
+        $depthDivisor = floor(self::DEPTH / $dimensions['depth']);
+        $maxWidth = $widthDivisor * $dimensions['width'];
+        $maxHeight = $heightDivisor * $dimensions['height'];
+        $maxDepth = $depthDivisor * $dimensions['depth'];
+        $maxArea = $maxWidth * $maxHeight * $maxDepth;
+        $remainingArea = $matrixArea - $maxArea;
+        $remainingHeight = floor($matrixArea / $maxWidth);
+        return $matrixArea >= $remainingArea && $dimensions['height'] <= $remainingHeight;
     }
 
     /**
@@ -139,13 +169,102 @@ class VectorMatrix extends Collection
     }
 
     /**
+     * Get all contiguous points in the positive direction along each axis from start point, optionally apply custom callback.
+     *
+     * @param Vector $startPoint
+     * @param callable|null $endCondition
+     *
+     * @return Collection
+     */
+    final public function findAllContiguousPoints(Vector $startPoint, callable $endCondition = null): Collection
+    {
+        if (is_null($endCondition)) {
+            $endCondition = static fn(Vector $v) => true;
+        }
+        if (!$this->hasVector(...$startPoint->toArray())) {
+            return Collection::make();
+        }
+        $startPoint = $this->getVector(...$startPoint->toArray());
+        if (!$endCondition($startPoint)) {
+            return Collection::make();
+        }
+        $contiguousPoints = Collection::make([$startPoint]);
+        $adjacentPoints = [$this->processContiguousPoint($startPoint, $endCondition)];
+        $nextAxis = [
+            'x' => 'y',
+            'y' => 'z',
+            'z' => 'x',
+        ];
+        while (count($adjacentPoints)) {
+            $nextVectors = array_shift($adjacentPoints);
+            foreach ($nextVectors as $axis => $vectors) {
+                if (!count($vectors)) {
+                    continue;
+                }
+                $coordinates = $vectors[0]->toArray();
+                ++$coordinates[$nextAxis[$axis]];
+                $contiguousPoints->push(...$vectors);
+                $contiguousPoints = $contiguousPoints->unique();
+                if (!$this->hasVector(...$coordinates)) {
+                    continue;
+                }
+                $nextVector = $this->getVector(...$coordinates);
+                if (!$endCondition($nextVector)) {
+                    continue;
+                }
+                $contiguousPoints->push($nextVector);
+                array_push($adjacentPoints, $this->processContiguousPoint($nextVector, $endCondition));
+            }
+        }
+        return $contiguousPoints;
+    }
+
+    /**
      * Get all of the vectors within this matrix that are not occupied.
      *
      * @return Collection
      */
     final public function getAvailableVectors(): Collection
     {
-        return $this->getMatrixVectors()->filter(fn(Vector $vector) => $vector->getBelongsTo() === $this);
+        return $this->getMatrixVectors()->filter([$this, 'isAvailableVector']);
+    }
+
+    /**
+     * Find all vectors which are considered available within contiguous groups.
+     *
+     * @return Collection
+     */
+    final public function getContiguousAvailableVectors(): Collection
+    {
+        $allVectors = $this->getAvailableVectors()->values();
+        $contiguousGroups = Collection::make();
+        while ($allVectors->count()) {
+            $group = $this->findAllContiguousPoints($allVectors->shift(), [$this, 'isAvailableVector']);
+            foreach ($group as $gVector) {
+                $key = $allVectors->search(fn(Vector $vector) => $gVector->equals($vector));
+                if ($key === false) {
+                    continue;
+                }
+                $allVectors->splice($key, 1);
+                $allVectors = $allVectors->values();
+            }
+            $contiguousGroups->push($group);
+        }
+        return $contiguousGroups;
+    }
+
+    /**
+     * Retrieve all of the distinct Vector Models occupying space in this matrix.
+     *
+     * @return Collection
+     */
+    final public function getDistinctOccupiers(): Collection
+    {
+        return $this->getMatrixVectors()
+            ->filter(fn(Vector $vector) => $vector->getBelongsTo() !== $this && $vector->getBelongsTo() !== null)
+            ->map(fn(Vector $vector) => $vector->getBelongsTo())
+            ->unique(fn(VectorModel $vectorModel) => $vectorModel->getAnchorPoint()->toArray())
+            ->values();
     }
 
     /**
@@ -206,6 +325,19 @@ class VectorMatrix extends Collection
     }
 
     /**
+     * Check if this vector is available or used.
+     *
+     * @param Vector $vector
+     *
+     * @return bool
+     */
+    #[Pure]
+    final public function isAvailableVector(Vector $vector): bool
+    {
+        return $vector->getBelongsTo() === $this;
+    }
+
+    /**
      * Remove a Vector at coordinates
      *
      * @param int $x
@@ -235,16 +367,60 @@ class VectorMatrix extends Collection
     private function assignAvailablePosition(VectorModel $vectorModel): self
     {
         if ($vectorModel->getVectors()->count() > $this->getAvailableVectors()->count()) {
-            throw new Exception('There is no available space for ' . get_class($vectorModel));
+            throw new Exception(sprintf(
+                'Insufficient available space of %d for %s, (width: %d, height: %d, depth: %d)',
+                $this->getAvailableVectors()->count(),
+                get_class($vectorModel),
+                ...array_values($vectorModel->getDimensions()->toArray())
+            ));
         }
         $anchorPoint = $this->getAvailableVectors()->first(
-            fn (Vector $availVector) => $this->canUseVectors($vectorModel->setAnchorPoint($availVector)->getVectors())
+            fn(Vector $availVector) => $this->canUseVectors($vectorModel->setAnchorPoint($availVector)->getVectors())
         );
         if (is_null($anchorPoint)) {
             $vectorModel->setAnchorPoint($anchorPoint);
-            throw new Exception('There is no available space to set anchor for ' . get_class($vectorModel));
+            throw new Exception(sprintf(
+                    'Insufficient available space of %d to set anchor for %s, (width: %d, height: %d, depth: %d)',
+                    $this->getAvailableVectors()->count(),
+                    get_class($vectorModel),
+                    ...array_values($vectorModel->getDimensions()->toArray())
+                )
+            );
         }
         return $this->assignVectors($vectorModel->getVectors());
+    }
+
+    /**
+     * Apply a function to each vector along each axis from this point (positive direction).
+     *
+     * @param Vector $vector
+     * @param callable $endCondition
+     *
+     * @return array
+     */
+    private function processContiguousPoint(Vector $vector, callable $endCondition): array
+    {
+        $returnAdjacent = [];
+        $directions = ['x', 'y', 'z'];
+        foreach ($directions as $axis) {
+            $returnAdjacent[$axis] = [];
+            $coordinates = $vector->toArray();
+            $nextVector = null;
+            do {
+                ++$coordinates[$axis];
+                if (!$this->hasVector(...$coordinates)) {
+                    $nextVector = null;
+                    break;
+                }
+                $nextVector = $this->getVector(...$coordinates);
+                if (!$endCondition($nextVector)) {
+                    $nextVector = null;
+                    break;
+                }
+                array_push($returnAdjacent[$axis], $nextVector);
+            } while (!is_null($nextVector));
+        }
+        return $returnAdjacent;
     }
 
     /**
@@ -258,7 +434,7 @@ class VectorMatrix extends Collection
     private function sortVectorItems(Collection $vectorItems): Collection
     {
         return $vectorItems->sort(function (VectorModel $a, VectorModel $b) {
-            if ($a->getDimensions()->equals($b->getDimensions())){
+            if ($a->getDimensions()->equals($b->getDimensions())) {
                 return 0;
             }
             $highestWidth = $a->getDimensions()->x > $b->getDimensions()->x ? $a : $b;
@@ -280,8 +456,8 @@ class VectorMatrix extends Collection
     private function throwException(int $x = 0, int $y = 0, int $z = 0): void
     {
         throw new OutOfBoundsException(
-            "Vector ('x': {$x}, 'y': {$y}, 'x': {$z}) "
-            . "not found in Matrix ('width': {$this->width}, 'height': {$this->height}, 'depth': {$this->depth})"
+            "Vector ('x': $x, 'y': $y, 'x': $z) "
+            . "not found in Matrix ('width': $this->width, 'height': $this->height, 'depth': $this->depth)"
         );
     }
 }

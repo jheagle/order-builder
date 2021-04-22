@@ -101,6 +101,7 @@ abstract class VectorModel extends Model
         if (!is_null($this->{$zField})) {
             data_set($this, $zField, $vector->z);
         }
+        $this->vectors = null;
         return $this;
     }
 
@@ -176,6 +177,9 @@ abstract class VectorModel extends Model
      */
     final public function getVectors(): Collection
     {
-        return $this->getPlanarPoints($this->getAnchorPoint(), $this->getDimensions());
+        if (is_null($this->vectors)){
+            $this->vectors = $this->getPlanarPoints($this->getAnchorPoint(), $this->getDimensions());
+        }
+        return $this->vectors;
     }
 }

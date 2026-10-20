@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\OrderItem;
 use App\Support\DataTransferObjects\OrderDto;
 use App\Support\DataTransferObjects\OrderItemDto;
+use Illuminate\Support\Arr;
 
 /**
  * Manage Orders
@@ -24,6 +25,7 @@ class OrderService
      */
     final public function buildOrder(OrderDto $orderDto): Order
     {
+        Arr::dot($orderDto);
         $order = new Order();
         $order->order_number = $orderDto->orderNumber ?? 0;
         $order->customer_id = $orderDto->customerId ?? 0;
